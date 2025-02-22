@@ -49,6 +49,7 @@ const Login = () => {
           <Form.Item label="Password" name="password">
             <Input type="password" required />
           </Form.Item>
+          <Link to='/register'>Dang ky</Link>
           <button className="btn btn-primary" type="submit">
             Login
           </button>
