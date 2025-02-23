@@ -1,6 +1,7 @@
 const userModel = require("../models/userModels");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const productModel = require("../models/productModels");
 
 //register callback
 const registerController = async (req, res) => {
@@ -41,7 +42,7 @@ const loginController = async (req, res) => {
         .status(200)
         .send({ message: "Tài khoản của bạn đã bị khóa!", success: false });
     }
-    
+
     const isMath = await bcrypt.compare(req.body.password, user.password);
     if (!isMath) {
       return res
@@ -82,8 +83,34 @@ const authController = async (req, res) => {
     });
   }
 };
+
+const fetchProducts = async (req, res) => {
+  try {
+    const products = await productModel.find({});
+    if (products.length === 0) {
+      return res.status(200).send({
+        success: false,
+        message: "Không có sản phẩm",
+        products: []
+      });
+    }
+    res.status(200).send({
+      success: true,
+      message: "Lấy sản phẩm thành công",
+      products
+    });
+  } catch (error) {
+    console.error("Lỗi lấy sản phẩm:", error);
+    res.status(500).send({
+      success: false,
+      message: "product error",
+      error,
+    });
+  }
+};
 module.exports = {
   loginController,
   registerController,
   authController,
+  fetchProducts,
 };

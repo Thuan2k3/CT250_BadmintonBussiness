@@ -4,27 +4,27 @@ const userSchema = new mongoose.Schema(
   {
     full_name: {
       type: String,
-      required: true,
+      required: false,
     },
     email: {
       type: String,
-      required: true,
-      unique: true,
+      required: false,
+      unique: false,
     },
     password: {
       type: String,
-      required: true,
+      required: false,
     },
     phone: {
       type: String,
-      required: true,
+      required: false,
     },
     address: {
       type: String,
-      required: true,
+      required: false,
     },
 
-    // Các vai trò (Chỉ có 1 vai trò là true, còn lại là false)
+    // Các vai trò (Chỉ có 1 vai trò là false, còn lại là false)
     isAdmin: {
       type: Boolean,
       default: false,
@@ -35,11 +35,11 @@ const userSchema = new mongoose.Schema(
     },
     isCustomer: {
       type: Boolean,
-      default: true,
+      default: false,
     }, // Mặc định là khách hàng
     isBlocked: { type: Boolean, default: false },
   },
-  { timestamps: true }
+  { timestamps: false }
 );
 
 module.exports = mongoose.model("users", userSchema);

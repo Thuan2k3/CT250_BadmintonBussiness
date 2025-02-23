@@ -3,6 +3,7 @@ const {
   loginController,
   registerController,
   authController,
+  fetchProducts,
 } = require("../controllers/userCtrl");
 const authMiddleware = require("../middlewares/authMiddleware");
 
@@ -18,5 +19,8 @@ router.post("/register", registerController);
 
 //Auth || POST
 router.post("/getUserData", authMiddleware, authController);
+
+//Product || GET
+router.get("/product", fetchProducts);
 
 module.exports = router;
