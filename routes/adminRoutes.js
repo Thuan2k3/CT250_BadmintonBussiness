@@ -22,10 +22,6 @@ const {
   createAccountController,
   updateAccountController,
   deleteAccountController,
-  createBookingController,
-  getAllBookingController,
-  getBookingController,
-  cancelBookingController,
   getAllTimeSlotController,
   getTimeSlotController,
   createTimeSlotController,
@@ -34,6 +30,13 @@ const {
   getCourtsWithBookingsController,
   createBookingWithCourtController,
   cancelBookingWithCourtController,
+  getAllInvoicesController,
+  createInvoiceController,
+  updateInvoiceController,
+  checkOutInvoiceController,
+  payInvoiceController,
+  getInvoiceDetailController,
+  getRevenueController,
 } = require("../controllers/adminCtrl");
 
 const router = express.Router();
@@ -145,5 +148,17 @@ router.put("/account/:id", authMiddleware, updateAccountController);
 
 //Xoa tai khoan
 router.delete("/account/:id", authMiddleware, deleteAccountController);
+
+// Lấy danh sách hóa đơn
+router.get("/invoice", authMiddleware, getAllInvoicesController);
+
+// Tạo hóa đơn
+router.post("/invoice", authMiddleware, createInvoiceController);
+
+//Lấy hóa đơn theo id
+router.get("/invoice/:id", authMiddleware, getInvoiceDetailController);
+
+// API: Thống kê tổng doanh thu theo ngày, tháng, năm
+router.get("/revenue", authMiddleware, getRevenueController);
 
 module.exports = router;
