@@ -1,40 +1,55 @@
 import React, { useEffect, useState } from "react";
 import Layout from "../../../components/Layout";
-import { Form, Input, Select, message } from "antd";
+import { Form, Input, Select, message, DatePicker } from "antd";
 import { useNavigate, useParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { hideLoading, showLoading } from "../../../redux/features/alertSlice";
 import axios from "axios";
+import dayjs from "dayjs";
 
 const UpdateAccountPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [form] = Form.useForm(); // Sử dụng form Ant Design
+  const [role, setRole] = useState("");
 
   const getAccountById = async () => {
     try {
       const res = await axios.get(
         `http://localhost:8080/api/v1/admin/account/${id}`,
         {
-          headers: {
-            Authorization: "Bearer " + localStorage.getItem("token"),
-          },
+          headers: { Authorization: "Bearer " + localStorage.getItem("token") },
         }
       );
+
       if (res.data.success) {
-        form.setFieldsValue({
-          full_name: res.data.data.full_name,
-          email: res.data.data.email,
-          phone: res.data.data.phone,
-          address: res.data.data.address,
-          role: res.data.data.isAdmin
-            ? "admin"
-            : res.data.data.isStaff
-            ? "staff"
-            : "customer",
-          isBlocked: res.data.data.isBlocked ? "blocked" : "active",
-        });
+        const accountData = res.data.data;
+
+        if (accountData.role === "employee") {
+          form.setFieldsValue({
+            full_name: accountData.full_name,
+            email: accountData.email,
+            phone: accountData.phone,
+            address: accountData.address,
+            role: accountData.role,
+            isBlocked: accountData.isBlocked ? "blocked" : "active",
+            hire_date: accountData.employee?.hire_date
+              ? dayjs(accountData.employee.hire_date)
+              : null,
+          });
+        } else {
+          form.setFieldsValue({
+            full_name: accountData.full_name,
+            email: accountData.email,
+            phone: accountData.phone,
+            address: accountData.address,
+            role: accountData.role,
+            isBlocked: accountData.isBlocked ? "blocked" : "active",
+          });
+        }
+
+        setRole(accountData.role);
       }
     } catch (error) {
       message.error("Có lỗi xảy ra. Vui lòng thử lại!");
@@ -65,7 +80,7 @@ const UpdateAccountPage = () => {
       }
     } catch (error) {
       dispatch(hideLoading());
-      message.error("Có lỗi xảy ra. Vui lòng thử lại!");
+      message.error(error.response.data.message);
     }
   };
 
@@ -113,12 +128,22 @@ const UpdateAccountPage = () => {
             name="role"
             rules={[{ required: true, message: "Vui lòng chọn vai trò" }]}
           >
-            <Select placeholder="Chọn vai trò">
+            <Select
+              placeholder="Chọn vai trò"
+              onChange={(value) => setRole(value)}
+            >
               <Select.Option value="admin">Admin</Select.Option>
-              <Select.Option value="staff">Nhân viên</Select.Option>
+              <Select.Option value="employee">Nhân viên</Select.Option>
               <Select.Option value="customer">Khách hàng</Select.Option>
             </Select>
           </Form.Item>
+
+          {role === "employee" && (
+            <Form.Item label="Ngày nhận việc" name="hire_date">
+              <DatePicker style={{ width: "100%" }} format="DD/MM/YYYY" />
+            </Form.Item>
+          )}
+
           <Form.Item
             label="Trạng thái"
             name="isBlocked"
