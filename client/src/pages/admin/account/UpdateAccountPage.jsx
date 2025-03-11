@@ -33,7 +33,7 @@ const UpdateAccountPage = () => {
             phone: accountData.phone,
             address: accountData.address,
             role: accountData.role,
-            isBlocked: accountData.isBlocked ? "blocked" : "active",
+            isBlocked: accountData.isBlocked ? true : false,
             hire_date: accountData.employee?.hire_date
               ? dayjs(accountData.employee.hire_date)
               : null,
@@ -63,7 +63,7 @@ const UpdateAccountPage = () => {
         `http://localhost:8080/api/v1/admin/account/${id}`,
         {
           ...values,
-          isBlocked: values.isBlocked === "blocked", // Chuyển đổi trạng thái
+          isBlocked: values.isBlocked, // Chuyển đổi trạng thái
         },
         {
           headers: {
