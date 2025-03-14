@@ -28,9 +28,12 @@ app.use(cors());
 app.use(express.json());
 app.use(morgan("dev"));
 
+//utils
+require("./utils/scheduler");
+
 //routes
 app.use("/api/v1/admin", require("./routes/adminRoutes"));
-app.use("/api/v1/staff", require("./routes/staffRoutes"));
+app.use("/api/v1/employee", require("./routes/employeeRoutes"));
 app.use("/api/v1/user", require("./routes/userRoutes"));
 
 app.use("/uploads", express.static("uploads")); // Cho phép truy cập ảnh từ trình duyệt

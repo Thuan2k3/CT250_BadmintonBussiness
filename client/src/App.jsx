@@ -6,35 +6,38 @@ import { useSelector } from "react-redux";
 import Spinner from "./components/Spinner";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { PublicRoute } from "./components/PublicRoute";
-import ProductCategoryPage from "./pages/admin/productCategory/ProductCategoryPage";
-import CreateProductCategoryPage from "./pages/admin/productCategory/CreateProductCategoryPage";
-import UpdateProductCategoryPage from "./pages/admin/productCategory/UpdateProductCategoryPage";
-import DeleteProductCategoryPage from "./pages/admin/productCategory/DeleteProductCategoryPage";
-import ProductPage from "./pages/admin/product/ProductPage";
-import CreateProductPage from "./pages/admin/product/CreateProductPage";
-import UpdateProductPage from "./pages/admin/product/UpdateProductPage";
-import DeleteProductPage from "./pages/admin/product/DeleteProductPage";
-import CourtPage from "./pages/admin/court/CourtPage";
-import CreateCourtPage from "./pages/admin/court/CreateCourtPage";
-import UpdateCourtPage from "./pages/admin/court/UpdateCourtPage";
-import DeleteCourtPage from "./pages/admin/court/DeleteCourtPage";
+import ProductCategoryPage from "./pages/employee/productCategory/ProductCategoryPage";
+import CreateProductCategoryPage from "./pages/employee/productCategory/CreateProductCategoryPage";
+import UpdateProductCategoryPage from "./pages/employee/productCategory/UpdateProductCategoryPage";
+import DeleteProductCategoryPage from "./pages/employee/productCategory/DeleteProductCategoryPage";
+import ProductPage from "./pages/employee/product/ProductPage";
+import CreateProductPage from "./pages/employee/product/CreateProductPage";
+import UpdateProductPage from "./pages/employee/product/UpdateProductPage";
+import DeleteProductPage from "./pages/employee/product/DeleteProductPage";
+import CourtPage from "./pages/employee/court/CourtPage";
+import CreateCourtPage from "./pages/employee/court/CreateCourtPage";
+import UpdateCourtPage from "./pages/employee/court/UpdateCourtPage";
+import DeleteCourtPage from "./pages/employee/court/DeleteCourtPage";
 import AccountPage from "./pages/admin/account/AccountPage";
 import CreateAccountPage from "./pages/admin/account/CreateAccountPage";
 import UpdateAccountPage from "./pages/admin/account/UpdateAccountPage";
 import DeleteAccountPage from "./pages/admin/account/DeleteAccountPage";
-import CourtBookingStatusPage from "./pages/admin/courtBookingStatus/CourtBookingStatusPage";
+import CourtBookingStatusPage from "./pages/customer/courtBookingStatus/CourtBookingStatusPage";
 import TimeSlotPage from "./pages/admin/timeSlot/TimeSlotPage";
 import CreateTimeSlotPage from "./pages/admin/timeSlot/CreateTimeSlotPage";
 import UpdateTimeSlotPage from "./pages/admin/timeSlot/UpdateTimeSlotPage";
 import DeleteTimeSlotPage from "./pages/admin/timeSlot/DeleteTimeSlotPage";
-import InvoicePage from "./pages/admin/invoice/InvoicePage";
+import InvoicePage from "./pages/employee/invoice/InvoicePage";
 import RevenueStatisticPage from "./pages/admin/revenueStatistic/RevenueStatisticPage";
-import InvoiceHistoryPage from "./pages/admin/invoice/InvoiceHistoryPage";
-import InvoiceDetailPage from "./pages/admin/invoice/InvoiceDetailPage";
-import ViewProductPage from "./pages/admin/product/ViewProductPage";
+import InvoiceHistoryPage from "./pages/employee/invoice/InvoiceHistoryPage";
+import InvoiceDetailPage from "./pages/employee/invoice/InvoiceDetailPage";
+import ViewProductPage from "./pages/customer/product/ViewProductPage";
 import GuestHomePage from "./pages/guest/GuestHomePage";
 import GuestViewProductPage from "./pages/guest/GuestViewProductPage";
 import GuestCourtBookingStatusPage from "./pages/guest/GuestCourtBookingStatusPage";
+import EmployeeCourtBookingStatusPage from "./pages/employee/courtBookingStatus/EmployeeCourtBookingStatusPage";
+import ReputationPage from "./pages/admin/reputation/ReputationPage";
+import UpdateReputationPage from "./pages/admin/reputation/UpdateReputationPage";
 
 function App() {
   const { loading } = useSelector((state) => state.alerts);
@@ -102,7 +105,7 @@ function App() {
               }
             />
             <Route
-              path="/admin/court"
+              path="/employee/court"
               element={
                 <ProtectedRoute>
                   <CourtPage />
@@ -110,7 +113,7 @@ function App() {
               }
             />
             <Route
-              path="/admin/court/create"
+              path="/employee/court/create"
               element={
                 <ProtectedRoute>
                   <CreateCourtPage />
@@ -118,7 +121,7 @@ function App() {
               }
             />
             <Route
-              path="/admin/court/update/:id"
+              path="/employee/court/update/:id"
               element={
                 <ProtectedRoute>
                   <UpdateCourtPage />
@@ -126,7 +129,7 @@ function App() {
               }
             />
             <Route
-              path="/admin/court/delete/:id"
+              path="/employee/court/delete/:id"
               element={
                 <ProtectedRoute>
                   <DeleteCourtPage />
@@ -166,7 +169,7 @@ function App() {
               }
             />
             <Route
-              path="/admin/court-booking-status"
+              path="/customer/court-booking-status"
               element={
                 <ProtectedRoute>
                   <CourtBookingStatusPage />
@@ -174,7 +177,15 @@ function App() {
               }
             />
             <Route
-              path="/admin/product-category"
+              path="/employee/court-booking-status"
+              element={
+                <ProtectedRoute>
+                  <EmployeeCourtBookingStatusPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/employee/product-category"
               element={
                 <ProtectedRoute>
                   <ProductCategoryPage />
@@ -182,7 +193,7 @@ function App() {
               }
             />
             <Route
-              path="/admin/product-category/create"
+              path="/employee/product-category/create"
               element={
                 <ProtectedRoute>
                   <CreateProductCategoryPage />
@@ -190,7 +201,7 @@ function App() {
               }
             />
             <Route
-              path="/admin/product-category/update/:id"
+              path="/employee/product-category/update/:id"
               element={
                 <ProtectedRoute>
                   <UpdateProductCategoryPage />
@@ -198,7 +209,7 @@ function App() {
               }
             />
             <Route
-              path="/admin/product-category/delete/:id"
+              path="/employee/product-category/delete/:id"
               element={
                 <ProtectedRoute>
                   <DeleteProductCategoryPage />
@@ -206,7 +217,7 @@ function App() {
               }
             />
             <Route
-              path="/admin/product"
+              path="/employee/product"
               element={
                 <ProtectedRoute>
                   <ProductPage />
@@ -214,7 +225,7 @@ function App() {
               }
             />
             <Route
-              path="/admin/product/create"
+              path="/employee/product/create"
               element={
                 <ProtectedRoute>
                   <CreateProductPage />
@@ -222,7 +233,7 @@ function App() {
               }
             />
             <Route
-              path="/admin/product/update/:id"
+              path="/employee/product/update/:id"
               element={
                 <ProtectedRoute>
                   <UpdateProductPage />
@@ -230,7 +241,7 @@ function App() {
               }
             />
             <Route
-              path="/admin/product/delete/:id"
+              path="/employee/product/delete/:id"
               element={
                 <ProtectedRoute>
                   <DeleteProductPage />
@@ -270,7 +281,23 @@ function App() {
               }
             />
             <Route
-              path="/admin/invoice"
+              path="/admin/reputation"
+              element={
+                <ProtectedRoute>
+                  <ReputationPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/reputation/update/:id"
+              element={
+                <ProtectedRoute>
+                  <UpdateReputationPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/employee/invoice"
               element={
                 <ProtectedRoute>
                   <InvoicePage />
@@ -278,7 +305,7 @@ function App() {
               }
             />
             <Route
-              path="/admin/invoice/history"
+              path="/employee/invoice/history"
               element={
                 <ProtectedRoute>
                   <InvoiceHistoryPage />
@@ -286,7 +313,7 @@ function App() {
               }
             />
             <Route
-              path="/admin/invoice/detail/:id"
+              path="/employee/invoice/detail/:id"
               element={
                 <ProtectedRoute>
                   <InvoiceDetailPage />
@@ -294,7 +321,7 @@ function App() {
               }
             />
             <Route
-              path="/admin/invoice/print/:id"
+              path="/employee/invoice/print/:id"
               element={
                 <ProtectedRoute>
                   <InvoiceDetailPage />

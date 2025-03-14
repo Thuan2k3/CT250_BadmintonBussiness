@@ -8,7 +8,7 @@ const timeSlotBookingSchema = new mongoose.Schema({
   },
   user: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "users",
+    ref: "customers",
     required: true,
   },
   court: {
@@ -33,6 +33,11 @@ const timeSlotBookingSchema = new mongoose.Schema({
     type: Boolean,
     required: true,
     default: true,
+  },
+  status: {
+    type: String,
+    enum: ["pending", "no-show", "completed"],
+    default: "pending", // Trạng thái đặt sân
   },
 });
 

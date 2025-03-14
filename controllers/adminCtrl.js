@@ -954,15 +954,8 @@ const createAccountController = async (req, res) => {
 const updateAccountController = async (req, res) => {
   try {
     const { id } = req.params;
-    const {
-      full_name,
-      email,
-      phone,
-      address,
-      role,
-      isBlocked,
-      hire_date,
-    } = req.body;
+    const { full_name, email, phone, address, role, isBlocked, hire_date } =
+      req.body;
     let { password } = req.body;
 
     let updateData = { full_name, email, phone, address, role, isBlocked };
@@ -974,9 +967,6 @@ const updateAccountController = async (req, res) => {
         success: false,
         message: "Tài khoản không tồn tại!",
       });
-    }
-    if (!password) {
-      password = existingUser.password;
     }
 
     const oldRole = existingUser.role;
@@ -996,6 +986,8 @@ const updateAccountController = async (req, res) => {
     // Nếu có mật khẩu mới, mã hóa trước khi cập nhật
     if (password) {
       updateData.password = await bcrypt.hash(password, 10);
+    } else {
+      password = existingUser.password;
     }
 
     // Cập nhật thông tin trong bảng User
@@ -1115,6 +1107,95 @@ const deleteAccountController = async (req, res) => {
   }
 };
 
+//Lấy khách hàng
+//Tai khoan
+// 📌 Lấy danh sách tất cả tài khoản (có populate thông tin chi tiết)
+const getAllCustomerController = async (req, res) => {
+  try {
+    const customers = await Customer.find().select("-password");
+
+    res.status(200).json({
+      success: true,
+      data: customers,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Lỗi server",
+      error: error.message,
+    });
+  }
+};
+
+const getCustomerController = async (req, res) => {
+  try {
+    // Tìm khách hàng theo ID (ẩn mật khẩu)
+    const customer = await Customer.findById(req.params.id).select("-password");
+
+    // Kiểm tra nếu không tìm thấy khách hàng
+    if (!customer) {
+      return res.status(404).json({
+        success: false,
+        message: "Không tìm thấy khách hàng",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: customer,
+    });
+  } catch (error) {
+    console.error("Lỗi khi lấy thông tin khách hàng:", error);
+    res.status(500).json({
+      success: false,
+      message: "Lỗi server",
+      error: error.message,
+    });
+  }
+};
+
+const updateReputationController = async (req, res) => {
+  try {
+    const { id } = req.params; // Lấy ID khách hàng từ URL
+    const { reputation_score } = req.body; // Lấy điểm uy tín từ request body
+
+    // Kiểm tra dữ liệu đầu vào
+    if (reputation_score === undefined || isNaN(reputation_score)) {
+      return res.status(400).json({
+        success: false,
+        message: "Điểm uy tín không hợp lệ.",
+      });
+    }
+
+    // Tìm khách hàng theo ID
+    const customer = await Customer.findById(id);
+    if (!customer) {
+      return res.status(404).json({
+        success: false,
+        message: "Không tìm thấy khách hàng.",
+      });
+    }
+
+    // Cập nhật điểm uy tín (đảm bảo không nhỏ hơn 0)
+    customer.reputation_score = Math.max(0, reputation_score);
+    await customer.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Cập nhật điểm uy tín thành công.",
+      data: customer,
+    });
+  } catch (error) {
+    console.error("❌ Lỗi khi cập nhật điểm uy tín:", error);
+    res.status(500).json({
+      success: false,
+      message: "Lỗi server.",
+      error: error.message,
+    });
+  }
+};
+
 //Hoa don
 //Lấy danh sách hóa đơn
 const getAllInvoicesController = async (req, res) => {
@@ -1161,6 +1242,7 @@ const createInvoiceController = async (req, res) => {
       checkInTime,
       checkOutTime,
       duration,
+      totalAmount,
     } = req.body;
 
     if (!employee) {
@@ -1168,8 +1250,6 @@ const createInvoiceController = async (req, res) => {
         .status(400)
         .json({ message: "Nhân viên không được để trống!" });
     }
-
-    let totalAmount = 0;
     const createdDetails = [];
 
     // Xử lý trường hợp mua sản phẩm
@@ -1182,7 +1262,6 @@ const createInvoiceController = async (req, res) => {
           quantity: detail.quantity,
         });
 
-        totalAmount += newDetail.priceAtTime * newDetail.quantity;
         await newDetail.save();
         createdDetails.push(newDetail._id);
       }
@@ -1195,10 +1274,6 @@ const createInvoiceController = async (req, res) => {
       if (!courtData) {
         return res.status(404).json({ message: "Sân không tồn tại!" });
       }
-
-      // Tính tiền thuê sân
-      courtPrice = courtData.price * (duration || 0);
-      totalAmount += courtPrice;
     }
 
     // Tạo hóa đơn
@@ -1357,6 +1432,9 @@ module.exports = {
   createAccountController,
   updateAccountController,
   deleteAccountController,
+  getAllCustomerController,
+  getCustomerController,
+  updateReputationController,
   getAllInvoicesController,
   createInvoiceController,
   getInvoiceDetailController,

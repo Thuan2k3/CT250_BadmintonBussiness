@@ -6,13 +6,13 @@ export const customerMenu = [
   },
   {
     name: "Xem tình trạng đặt sân",
-    path: "/admin/court-booking-status",
+    path: "/customer/court-booking-status",
     icon: "fa-solid fa-calendar-days",
   },
   {
     name: "Xem Sản Phẩm",
     path: "/customer/product/view",
-    icon: "fa-solid fa-user-doctor",
+    icon: "fa-solid fa-store",
   },
 ];
 
@@ -25,32 +25,27 @@ export const employeeMenu = [
   },
   {
     name: "Quản lý sân",
-    path: "/admin/court",
+    path: "/employee/court",
     icon: "fa-solid fa-table",
   },
   {
-    name: "Quản lý khung giờ",
-    path: "/admin/time-slot",
-    icon: "fa-solid fa-clock",
-  },
-  {
     name: "Xem tình trạng đặt sân",
-    path: "/admin/court-booking-status",
+    path: "/employee/court-booking-status",
     icon: "fa-solid fa-calendar-days",
   },
   {
     name: "Quản lý danh mục sản phẩm",
-    path: "/admin/product-category",
+    path: "/employee/product-category",
     icon: "fa-solid fa-list",
   },
   {
     name: "Quản lý sản phẩm",
-    path: "/admin/product",
+    path: "/employee/product",
     icon: "fa-brands fa-product-hunt",
   },
   {
     name: "Quản lý hóa đơn",
-    path: "/admin/invoice",
+    path: "/employee/invoice",
     icon: "fa-solid fa-file-invoice",
   },
 ];
@@ -64,34 +59,9 @@ export const adminMenu = [
     icon: "fa-solid fa-house",
   },
   {
-    name: "Quản lý sân",
-    path: "/admin/court",
-    icon: "fa-solid fa-table",
-  },
-  {
     name: "Quản lý khung giờ",
     path: "/admin/time-slot",
     icon: "fa-solid fa-clock",
-  },
-  {
-    name: "Xem tình trạng đặt sân",
-    path: "/admin/court-booking-status",
-    icon: "fa-solid fa-calendar-days",
-  },
-  {
-    name: "Quản lý danh mục sản phẩm",
-    path: "/admin/product-category",
-    icon: "fa-solid fa-list",
-  },
-  {
-    name: "Quản lý sản phẩm",
-    path: "/admin/product",
-    icon: "fa-brands fa-product-hunt",
-  },
-  {
-    name: "Quản lý hóa đơn",
-    path: "/admin/invoice",
-    icon: "fa-solid fa-file-invoice",
   },
   {
     name: "Quản lý Tài Khoản",
@@ -99,8 +69,13 @@ export const adminMenu = [
     icon: "fas fa-users",
   },
   {
+    name: "Quản lý điểm uy tín khách hàng",
+    path: "/admin/reputation",
+    icon: "fas fa-users",
+  },
+  {
     name: "Xem thống kê doanh thu",
     path: "/admin/revenue",
-    icon: "fas fa-chart-bar",
+    icon: "fas fa-sack-dollar",
   },
 ];

@@ -33,9 +33,9 @@ const UpdateAccountPage = () => {
             phone: accountData.phone,
             address: accountData.address,
             role: accountData.role,
-            isBlocked: accountData.isBlocked ? true : false,
-            hire_date: accountData.employee?.hire_date
-              ? dayjs(accountData.employee.hire_date)
+            isBlocked: accountData.isBlocked,
+            hire_date: accountData?.hire_date
+              ? dayjs(accountData.hire_date)
               : null,
           });
         } else {
@@ -45,7 +45,7 @@ const UpdateAccountPage = () => {
             phone: accountData.phone,
             address: accountData.address,
             role: accountData.role,
-            isBlocked: accountData.isBlocked ? true : false,
+            isBlocked: accountData.isBlocked,
           });
         }
 
