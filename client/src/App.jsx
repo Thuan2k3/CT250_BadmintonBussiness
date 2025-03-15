@@ -38,6 +38,8 @@ import GuestCourtBookingStatusPage from "./pages/guest/GuestCourtBookingStatusPa
 import EmployeeCourtBookingStatusPage from "./pages/employee/courtBookingStatus/EmployeeCourtBookingStatusPage";
 import ReputationPage from "./pages/admin/reputation/ReputationPage";
 import UpdateReputationPage from "./pages/admin/reputation/UpdateReputationPage";
+import CourtBookingHistoryPage from "./pages/admin/courtBookingHistory/CourtBookingHistoryPage";
+
 
 function App() {
   const { loading } = useSelector((state) => state.alerts);
@@ -333,6 +335,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <RevenueStatisticPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/court-booking-history"
+              element={
+                <ProtectedRoute>
+                  <CourtBookingHistoryPage />
                 </ProtectedRoute>
               }
             />
