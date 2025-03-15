@@ -368,23 +368,23 @@ const getCourtsWithBookingsController = async (req, res) => {
 
               return bookedSlot
                 ? {
-                    timeSlotBooking_id: bookedSlot._id,
-                    userId: bookedSlot.user ? bookedSlot.user._id : null,
-                    full_name: bookedSlot.user
-                      ? bookedSlot.user.full_name
-                      : null,
-                    email: bookedSlot.user ? bookedSlot.user.email : null,
-                    time: bookedSlot.time,
-                    isBooked: true,
-                  }
+                  timeSlotBooking_id: bookedSlot._id,
+                  userId: bookedSlot.user ? bookedSlot.user._id : null,
+                  full_name: bookedSlot.user
+                    ? bookedSlot.user.full_name
+                    : null,
+                  email: bookedSlot.user ? bookedSlot.user.email : null,
+                  time: bookedSlot.time,
+                  isBooked: true,
+                }
                 : {
-                    timeSlotBooking_id: null,
-                    userId: null,
-                    full_name: null,
-                    email: null,
-                    time: slot.time,
-                    isBooked: false,
-                  };
+                  timeSlotBooking_id: null,
+                  userId: null,
+                  full_name: null,
+                  email: null,
+                  time: slot.time,
+                  isBooked: false,
+                };
             })
             .sort((a, b) => a.time.localeCompare(b.time)); // 🛠 Sắp xếp theo giờ tăng dần;
 
@@ -1327,6 +1327,37 @@ const getRevenueController = async (req, res) => {
   }
 };
 
+const getCourtBookingHistory = async (req, res) => {
+  try {
+    const { startDate, endDate } = req.query;
+    let filter = {};
+
+    console.log(">>> Tham số nhận được:", startDate, endDate);
+
+    if (startDate && endDate) {
+      filter.date = { $gte: new Date(startDate), $lte: new Date(endDate) };
+    }
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    console.log(">>> Ngày bắt đầu:", start, " | Ngày kết thúc:", end);
+
+    const history = await TimeSlotBooking.find(filter)
+      .populate("user", "full_name email")
+      .populate("court", "type")
+      .populate("timeSlot", "time")
+      .sort({ date: -1 });
+
+    console.log(">>> Dữ liệu trả về:", history);
+
+    res.status(200).json(history);
+  } catch (error) {
+    console.error("Lỗi lấy lịch sử đặt sân:", error);
+    res.status(500).json({ message: "Lỗi server", error: error.message });
+  }
+};
+
+
 module.exports = {
   getAllUsersController,
   getAllCourtController,
@@ -1362,4 +1393,5 @@ module.exports = {
   getInvoiceDetailController,
   getTimeSlotBooking,
   getRevenueController,
+  getCourtBookingHistory,
 };

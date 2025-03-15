@@ -27,12 +27,13 @@ const userSchema = new mongoose.Schema(
     role: {
       type: String,
       enum: ["admin", "employee", "customer"],
-      required: true,
+      required: false,
       default: "customer",
     },
-    isBlocked: {
+    status: {
       type: Boolean,
-      default: false,
+      enum: ["pending", "blocked", "active"],
+      default: "pending",
     },
   },
   { timestamps: true }

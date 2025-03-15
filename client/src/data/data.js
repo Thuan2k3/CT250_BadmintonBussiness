@@ -103,4 +103,9 @@ export const adminMenu = [
     path: "/admin/revenue",
     icon: "fas fa-chart-bar",
   },
+  {
+    name: "Xem lịch sử đặt sân",
+    path: "/admin/court-booking-history",
+    icon: "fa-solid fa-calendar-days",
+  },
 ];
