@@ -1,15 +1,17 @@
 import React from "react";
 import "../styles/LoginStyle.css";
 import { Form, Input, message } from "antd";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { showLoading, hideLoading } from "../redux/features/alertSlice";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import GuestLayout from "../components/GuestLayout";
+import { setUser } from "../redux/features/userSlice";
 
 const Login = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { user } = useSelector((state) => state.user);
   //form handler
   const onFinishHandler = async (values) => {
     try {
@@ -21,18 +23,16 @@ const Login = () => {
       dispatch(hideLoading());
       if (res.data.success) {
         localStorage.setItem("token", res.data.token);
-        message.success("Login successfully");
+        message.success("Đăng nhập thành công!");
         navigate("/");
       } else {
         message.error(res.data.message);
       }
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
+      dispatch(setUser(user));
     } catch (error) {
       dispatch(hideLoading());
       console.log(error);
-      message.error("Something went wrong");
+      message.error("Lỗi đăng nhập!");
     }
   };
   return (
@@ -42,8 +42,15 @@ const Login = () => {
           layout="vertical"
           onFinish={onFinishHandler}
           className="register-form"
+          style={{
+            padding: "40px",
+            background: "linear-gradient(135deg, #fdfbfb, #ebedee)",
+            borderRadius: "20px",
+            boxShadow: "0 12px 32px rgba(0, 0, 0, 0.15)",
+            animation: "fadeIn 0.8s ease-in-out",
+          }}
         >
-          <h3 className="text-center">Đăng nhập</h3>
+          <h3 className="text-center text-primary">ĐĂNG NHẬP</h3>
           <Form.Item label="Email" name="email">
             <Input type="email" required />
           </Form.Item>

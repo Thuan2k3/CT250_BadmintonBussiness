@@ -6,6 +6,7 @@ import axios from "axios";
 import { useSelector } from "react-redux";
 import { useState } from "react";
 import moment from "moment";
+import dayjs from "dayjs";
 
 const CheckoutButton = ({
   getTotalAmountForCourt,
@@ -51,6 +52,20 @@ const CheckoutButton = ({
         return;
       }
     }
+    if (type === "rent") {
+      const selectedCourtData = orderItemsCourt.find(
+        (item) => item.court._id === selectedCourt._id
+      );
+
+      const hasProducts = selectedCourtData?.products.length > 0;
+
+      if (hasProducts) {
+        message.warning(
+          "Đang có sản phẩm. Vui lòng chọn loại Thuê sân và mua sản phẩm!"
+        );
+        return;
+      }
+    }
 
     const selectedCourtOrders = orderItemsCourt.find(
       (item) => String(item.court?._id) === String(selectedCourt?._id)
@@ -81,14 +96,12 @@ const CheckoutButton = ({
     };
 
     const duration = (() => {
-      const durationMinutes =
-        (new Date(checkOutTime) - new Date(checkInTime)) / (1000 * 60);
-      const fullHours = Math.floor(durationMinutes / 60);
-      const extraMinutes = durationMinutes % 60;
+      // Làm tròn check-in xuống giờ gần nhất, check-out lên giờ gần nhất
+      const roundedCheckIn = dayjs(checkInTime).startOf("hour");
+      const roundedCheckOut = dayjs(checkOutTime).endOf("hour");
 
-      return checkInTime && checkOutTime
-        ? Math.max(1, extraMinutes <= 5 ? fullHours : fullHours + 1)
-        : 0;
+      // Tính tổng số giờ, đảm bảo tối thiểu 1 giờ
+      return Math.max(1, roundedCheckOut.diff(roundedCheckIn, "hour"));
     })();
 
     const invoiceData = {
@@ -133,9 +146,16 @@ const CheckoutButton = ({
 
       if (courtId === "guest") {
         localStorage.removeItem("guest_order");
+        console.log("✅ Đã xóa đơn hàng của khách vãng lai khỏi localStorage.");
       } else {
-        const orderRef = ref(database, `orders/${courtId}`);
-        await remove(orderRef);
+        try {
+          const orderRef = ref(database, `orders/${courtId}`);
+          await remove(orderRef);
+          console.log(`✅ Đã xóa sân: ${courtId} khỏi Firebase.`);
+        } catch (error) {
+          console.error("❌ Lỗi khi xóa sân khỏi Firebase:", error);
+          message.error("Lỗi khi cập nhật trạng thái sân! Vui lòng thử lại.");
+        }
       }
     } catch (error) {
       console.error("Lỗi khi lưu hóa đơn:", error);
@@ -146,6 +166,57 @@ const CheckoutButton = ({
   };
 
   const showConfirmModal = () => {
+    const newTotal = getTotalAmountForCourt(selectedCourt._id);
+
+    if (!orderItemsCourt || newTotal <= 0) {
+      message.warning("Không có hóa đơn nào để thanh toán!");
+      return;
+    }
+
+    if (selectedCourt && !selectedCourt.isEmpty) {
+      message.warning(
+        `Sân ${selectedCourt.name} vẫn đang được sử dụng! Vui lòng check-out trước khi thanh toán.`
+      );
+      return;
+    }
+
+    if (type === "both") {
+      const selectedCourtData = orderItemsCourt.find(
+        (item) => item.court._id === selectedCourt._id
+      );
+
+      const hasProducts = selectedCourtData?.products.length > 0;
+
+      if (!hasProducts) {
+        message.warning(
+          "Vui lòng chọn ít nhất một sản phẩm hoặc chọn loại thuê sân!"
+        );
+        return;
+      }
+    }
+    if (type === "rent") {
+      const selectedCourtData = orderItemsCourt.find(
+        (item) => item.court._id === selectedCourt._id
+      );
+
+      const hasProducts = selectedCourtData?.products.length > 0;
+
+      if (hasProducts) {
+        message.warning(
+          "Đang có sản phẩm. Vui lòng chọn loại Thuê sân và mua sản phẩm!"
+        );
+        return;
+      }
+    }
+
+    const selectedCourtOrders = orderItemsCourt.find(
+      (item) => String(item.court?._id) === String(selectedCourt?._id)
+    );
+
+    if (!selectedCourtOrders) {
+      message.warning("Không có sản phẩm nào để thanh toán!");
+      return;
+    }
     setIsModalOpen(true);
   };
 

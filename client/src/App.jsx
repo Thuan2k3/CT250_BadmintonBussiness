@@ -35,11 +35,10 @@ import ViewProductPage from "./pages/customer/product/ViewProductPage";
 import GuestHomePage from "./pages/guest/GuestHomePage";
 import GuestViewProductPage from "./pages/guest/GuestViewProductPage";
 import GuestCourtBookingStatusPage from "./pages/guest/GuestCourtBookingStatusPage";
+import RevenuePredictionPage from "./pages/admin/revenuePrediction/RevenuePredictionPage";
 import EmployeeCourtBookingStatusPage from "./pages/employee/courtBookingStatus/EmployeeCourtBookingStatusPage";
 import ReputationPage from "./pages/admin/reputation/ReputationPage";
 import UpdateReputationPage from "./pages/admin/reputation/UpdateReputationPage";
-import CourtBookingHistoryPage from "./pages/admin/courtBookingHistory/CourtBookingHistoryPage";
-
 
 function App() {
   const { loading } = useSelector((state) => state.alerts);
@@ -339,10 +338,10 @@ function App() {
               }
             />
             <Route
-              path="/admin/court-booking-history"
+              path="/admin/revenue-prediction"
               element={
                 <ProtectedRoute>
-                  <CourtBookingHistoryPage />
+                  <RevenuePredictionPage />
                 </ProtectedRoute>
               }
             />

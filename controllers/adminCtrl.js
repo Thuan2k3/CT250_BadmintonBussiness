@@ -14,6 +14,7 @@ const path = require("path");
 const Invoice = require("../models/invoiceModel");
 const InvoiceDetail = require("../models/invoiceDetailModel");
 const moment = require("moment");
+const dayjs = require("dayjs");
 const mongoose = require("mongoose");
 
 const getAllUsersController = async (req, res) => {
@@ -329,17 +330,21 @@ const deleteTimeSlotController = async (req, res) => {
 //Lay san voi bookings
 const getCourtsWithBookingsController = async (req, res) => {
   try {
-    const courts = await Court.find().populate("bookings").lean();
+    const courts = await Court.find()
+      .populate("bookings")
+      .sort({ name: 1 })
+      .collation({ locale: "en", strength: 1 })
+      .lean();
+
     const timeSlots = await TimeSlot.find().lean();
     const timeSlotBookings = await TimeSlotBooking.find()
       .populate("user", "full_name email")
       .lean();
 
+    // Hàm lấy 7 ngày tiếp theo
     const getNext7Days = () => {
       return Array.from({ length: 7 }, (_, i) => {
-        const date = new Date();
-        date.setDate(date.getDate() + i);
-        return date.toISOString().split("T")[0];
+        return dayjs().add(i, "day").format("YYYY-MM-DD");
       });
     };
 
@@ -349,17 +354,21 @@ const getCourtsWithBookingsController = async (req, res) => {
       return {
         ...court,
         bookings: dates.map((date) => {
-          const courtBookings = timeSlotBookings.filter(
-            (ts) =>
+          const courtBookings = timeSlotBookings.filter((ts) => {
+            const bookingDate = dayjs(ts.date).format("YYYY-MM-DD");
+            return (
               ts.court.toString() === court._id.toString() &&
-              ts.date.toISOString().split("T")[0] === date
-          );
+              bookingDate === date
+            );
+          });
 
-          // Nếu có ít nhất một booking cho ngày này, lấy booking_id của booking đầu tiên (hoặc có thể tùy chỉnh logic lấy booking_id khác)
-          const booking = court.bookings.find(
-            (b) => b.date.toISOString().split("T")[0] === date
-          );
+          // Kiểm tra booking của từng sân theo ngày
+          const booking = court.bookings.find((b) => {
+            const bookingDate = dayjs(b.date).format("YYYY-MM-DD");
+            return bookingDate === date;
+          });
 
+          // Xử lý trạng thái của từng khung giờ
           const timeSlotsWithStatus = timeSlots
             .map((slot) => {
               const bookedSlot = courtBookings.find(
@@ -386,12 +395,12 @@ const getCourtsWithBookingsController = async (req, res) => {
                     isBooked: false,
                   };
             })
-            .sort((a, b) => a.time.localeCompare(b.time)); // 🛠 Sắp xếp theo giờ tăng dần;
+            .sort((a, b) => a.time.localeCompare(b.time)); // Sắp xếp theo giờ tăng dần
 
           return {
             date,
             court_id: court._id,
-            booking_id: booking ? booking._id : null, // Đưa booking_id ra ngoài timeSlots
+            booking_id: booking ? booking._id : null,
             timeSlots: timeSlotsWithStatus,
           };
         }),
@@ -400,7 +409,7 @@ const getCourtsWithBookingsController = async (req, res) => {
 
     res.json(courtsWithBookings);
   } catch (error) {
-    console.error(error);
+    console.error("Lỗi server:", error);
     res.status(500).json({ error: "Lỗi server" });
   }
 };
@@ -1402,36 +1411,6 @@ const getRevenueController = async (req, res) => {
   }
 };
 
-const getCourtBookingHistory = async (req, res) => {
-  try {
-    const { startDate, endDate } = req.query;
-    let filter = {};
-
-    console.log(">>> Tham số nhận được:", startDate, endDate);
-
-    if (startDate && endDate) {
-      filter.date = { $gte: new Date(startDate), $lte: new Date(endDate) };
-    }
-
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    console.log(">>> Ngày bắt đầu:", start, " | Ngày kết thúc:", end);
-
-    const history = await TimeSlotBooking.find(filter)
-      .populate("user", "full_name email")
-      .populate("court", "type")
-      .populate("timeSlot", "time")
-      .sort({ date: -1 });
-
-    console.log(">>> Dữ liệu trả về:", history);
-
-    res.status(200).json(history);
-  } catch (error) {
-    console.error("Lỗi lấy lịch sử đặt sân:", error);
-    res.status(500).json({ message: "Lỗi server", error: error.message });
-  }
-};
-
 module.exports = {
   getAllUsersController,
   getAllCourtController,
@@ -1470,5 +1449,4 @@ module.exports = {
   getInvoiceDetailController,
   getTimeSlotBooking,
   getRevenueController,
-  getCourtBookingHistory
 };

@@ -3,20 +3,21 @@ import "../styles/LayoutStyles.css";
 import { adminMenu } from "../data/data";
 import { Link, useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Badge, message } from "antd";
 import { customerMenu } from "../data/data";
 import { employeeMenu } from "../data/data";
+import { setUser } from "../redux/features/userSlice";
 const Layout = ({ children }) => {
   const { user } = useSelector((state) => state.user);
   const location = useLocation();
-  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   //logout function
   const handleLogout = () => {
     localStorage.clear();
-    message.success("Logout successfully");
-    navigate("/login");
+    dispatch(setUser(null));
+    message.success("Đăng xuất thành công!");
   };
 
   //rendering menu list
@@ -60,8 +61,19 @@ const Layout = ({ children }) => {
                 style={{ cursor: "pointer", height: "100%" }}
               >
                 <p className="fw-bold mb-0">{user?.full_name}</p>
-                <p className="text-secondary text-lowercase mb-0">
-                  {user?.role}
+                <p
+                  className="text-secondary mb-0"
+                  style={{
+                    lineHeight: "1.2",
+                    textTransform: "none",
+                    fontSize: "15px",
+                  }}
+                >
+                  {user?.role === "employee"
+                    ? "Nhân viên"
+                    : user?.role === "customer"
+                    ? "Khách hàng"
+                    : "Admin"}
                 </p>
               </div>
             </div>

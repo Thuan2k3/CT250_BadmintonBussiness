@@ -14,6 +14,7 @@ const Invoice = require("../models/invoiceModel");
 const InvoiceDetail = require("../models/invoiceDetailModel");
 const Customer = require("../models/customerModel");
 const moment = require("moment");
+const dayjs = require("dayjs");
 
 //register callback
 const registerController = async (req, res) => {
@@ -57,28 +58,31 @@ const loginController = async (req, res) => {
     if (user.role === "customer") {
       const customer = await Customer.findOne({ email: req.body.email });
       if (customer.reputation_score < 10) {
-        return res
-          .status(200)
-          .send({
-            message: "Bạn không thể đăng nhập vì điểm uy tín thấp!",
-            success: false,
-          });
+        return res.status(200).send({
+          message: "Bạn không thể đăng nhập vì điểm uy tín thấp!",
+          success: false,
+        });
       }
     }
 
     const isMath = await bcrypt.compare(req.body.password, user.password);
     if (!isMath) {
-      return res
-        .status(200)
-        .send({ message: "Invalid Email or Password", success: false });
+      return res.status(200).send({
+        message: "Email hoặc mật khẩu không chính xác!",
+        success: false,
+      });
     }
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "1d",
     });
-    res.status(200).send({ message: "Login Success", success: true, token });
+    res
+      .status(200)
+      .send({ message: "Đăng nhập thành công", success: true, token });
   } catch (error) {
     console.log(error);
-    res.status(500).send({ message: `Error in Login CTRL ${error.message}` });
+    res
+      .status(500)
+      .send({ message: `Lỗi trong Login Controller ${error.message}` });
   }
 };
 
@@ -110,17 +114,21 @@ const authController = async (req, res) => {
 //Lay san voi bookings
 const getCourtsWithBookingsController = async (req, res) => {
   try {
-    const courts = await Court.find().populate("bookings").lean();
+    const courts = await Court.find()
+      .populate("bookings")
+      .sort({ name: 1 })
+      .collation({ locale: "en", strength: 1 })
+      .lean();
+
     const timeSlots = await TimeSlot.find().lean();
     const timeSlotBookings = await TimeSlotBooking.find()
       .populate("user", "full_name email")
       .lean();
 
+    // Hàm lấy 7 ngày tiếp theo
     const getNext7Days = () => {
       return Array.from({ length: 7 }, (_, i) => {
-        const date = new Date();
-        date.setDate(date.getDate() + i);
-        return date.toISOString().split("T")[0];
+        return dayjs().add(i, "day").format("YYYY-MM-DD");
       });
     };
 
@@ -130,45 +138,53 @@ const getCourtsWithBookingsController = async (req, res) => {
       return {
         ...court,
         bookings: dates.map((date) => {
-          const courtBookings = timeSlotBookings.filter(
-            (ts) =>
+          const courtBookings = timeSlotBookings.filter((ts) => {
+            const bookingDate = dayjs(ts.date).format("YYYY-MM-DD");
+            return (
               ts.court.toString() === court._id.toString() &&
-              ts.date.toISOString().split("T")[0] === date
-          );
-
-          // Nếu có ít nhất một booking cho ngày này, lấy booking_id của booking đầu tiên (hoặc có thể tùy chỉnh logic lấy booking_id khác)
-          const booking = court.bookings.find(
-            (b) => b.date.toISOString().split("T")[0] === date
-          );
-
-          const timeSlotsWithStatus = timeSlots.map((slot) => {
-            const bookedSlot = courtBookings.find(
-              (booking) => booking.time === slot.time
+              bookingDate === date
             );
-
-            return bookedSlot
-              ? {
-                  timeSlotBooking_id: bookedSlot._id,
-                  userId: bookedSlot.user ? bookedSlot.user._id : null,
-                  full_name: bookedSlot.user ? bookedSlot.user.full_name : null,
-                  email: bookedSlot.user ? bookedSlot.user.email : null,
-                  time: bookedSlot.time,
-                  isBooked: true,
-                }
-              : {
-                  timeSlotBooking_id: null,
-                  userId: null,
-                  full_name: null,
-                  email: null,
-                  time: slot.time,
-                  isBooked: false,
-                };
           });
+
+          // Kiểm tra booking của từng sân theo ngày
+          const booking = court.bookings.find((b) => {
+            const bookingDate = dayjs(b.date).format("YYYY-MM-DD");
+            return bookingDate === date;
+          });
+
+          // Xử lý trạng thái của từng khung giờ
+          const timeSlotsWithStatus = timeSlots
+            .map((slot) => {
+              const bookedSlot = courtBookings.find(
+                (booking) => booking.time === slot.time
+              );
+
+              return bookedSlot
+                ? {
+                    timeSlotBooking_id: bookedSlot._id,
+                    userId: bookedSlot.user ? bookedSlot.user._id : null,
+                    full_name: bookedSlot.user
+                      ? bookedSlot.user.full_name
+                      : null,
+                    email: bookedSlot.user ? bookedSlot.user.email : null,
+                    time: bookedSlot.time,
+                    isBooked: true,
+                  }
+                : {
+                    timeSlotBooking_id: null,
+                    userId: null,
+                    full_name: null,
+                    email: null,
+                    time: slot.time,
+                    isBooked: false,
+                  };
+            })
+            .sort((a, b) => a.time.localeCompare(b.time)); // Sắp xếp theo giờ tăng dần
 
           return {
             date,
             court_id: court._id,
-            booking_id: booking ? booking._id : null, // Đưa booking_id ra ngoài timeSlots
+            booking_id: booking ? booking._id : null,
             timeSlots: timeSlotsWithStatus,
           };
         }),
@@ -177,7 +193,7 @@ const getCourtsWithBookingsController = async (req, res) => {
 
     res.json(courtsWithBookings);
   } catch (error) {
-    console.error(error);
+    console.error("Lỗi server:", error);
     res.status(500).json({ error: "Lỗi server" });
   }
 };
@@ -325,7 +341,11 @@ const cancelBookingWithCourtController = async (req, res) => {
 //Product
 const getAllProductController = async (req, res) => {
   try {
-    const products = await Product.find().populate("category").exec(); // Lấy tất cả sản phẩm từ DB
+    const products = await Product.find()
+      .populate("category")
+      .sort({ name: 1 })
+      .collation({ locale: "en", strength: 1 })
+      .exec(); // Lấy tất cả sản phẩm từ DB
 
     res.status(200).json({
       success: true,
@@ -341,7 +361,9 @@ const getAllProductController = async (req, res) => {
 //Court
 const getAllCourtController = async (req, res) => {
   try {
-    const courts = await Court.find(); // Lấy tất cả sản phẩm từ DB
+    const courts = await Court.find()
+      .sort({ name: 1 })
+      .collation({ locale: "en", strength: 1 }); // Lấy tất cả sản phẩm từ DB
 
     res.status(200).json({
       success: true,

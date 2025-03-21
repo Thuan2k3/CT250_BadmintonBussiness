@@ -38,7 +38,6 @@ const {
   getAllCustomerController,
   getCustomerController,
   updateReputationController,
-  getCourtBookingHistory,
 } = require("../controllers/adminCtrl");
 
 const router = express.Router();
@@ -172,7 +171,5 @@ router.get("/court/:courtId/:date/:time", authMiddleware, getTimeSlotBooking);
 
 // API: Thống kê tổng doanh thu theo ngày, tháng, năm
 router.get("/revenue", authMiddleware, getRevenueController);
-
-router.get("/history", authMiddleware, getCourtBookingHistory);
 
 module.exports = router;
