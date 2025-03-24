@@ -5,8 +5,10 @@ import { AiOutlineEdit, AiOutlineSearch } from "react-icons/ai";
 import { MdOutlineAddBox, MdOutlineDelete } from "react-icons/md";
 import { Pagination } from "antd";
 import axios from "axios";
+import LockCourt from "../../../components/LockCourt";
+import UnLockCourt from "../../../components/UnLockCourt";
 
-const CourtPage = () => {
+const CourtPage = (props) => {
   const [courts, setCourts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -97,7 +99,17 @@ const CourtPage = () => {
           </div>
 
           {/* Nút thêm sân */}
-          <div className="align-self-end mt-3">
+          <div className="align-self-end mt-3" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
+            <div style={{ display: "flex", gap: "20px" }}>
+              <LockCourt
+                courts={courts}
+                getAllCourts={getAllCourts}
+              />
+              <UnLockCourt
+                courts={courts}
+                getAllCourts={getAllCourts}
+              />
+            </div>
             <Link
               to="/employee/court/create"
               className="fs-1 text-success d-flex align-items-center"
@@ -170,14 +182,14 @@ const CourtPage = () => {
         </div>
         {/* Phân trang */}
         {filteredCourts.length > pageSize && (
-        <div className="d-flex justify-content-center mt-4">
-          <Pagination
-            current={currentPage}
-            pageSize={pageSize}
-            total={filteredCourts.length}
-            onChange={(page) => setCurrentPage(page)}
-          />
-        </div>
+          <div className="d-flex justify-content-center mt-4">
+            <Pagination
+              current={currentPage}
+              pageSize={pageSize}
+              total={filteredCourts.length}
+              onChange={(page) => setCurrentPage(page)}
+            />
+          </div>
         )}
       </div>
     </Layout>

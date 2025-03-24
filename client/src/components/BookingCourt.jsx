@@ -5,6 +5,7 @@ import {
   CheckSquareOutlined,
   CloseSquareOutlined,
   ExclamationCircleOutlined,
+  LockFilled,
 } from "@ant-design/icons";
 import { Card, Button, Row, Col, Modal, message, Tooltip } from "antd";
 import { useSelector } from "react-redux";
@@ -48,10 +49,10 @@ const BookingCourt = ({ court }) => {
             ? slot === "unbooked"
               ? "selected"
               : slot === "booked"
-              ? "selectunbooked"
-              : slot === "selectunbooked"
-              ? "booked"
-              : "unbooked"
+                ? "selectunbooked"
+                : slot === "selectunbooked"
+                  ? "booked"
+                  : "unbooked"
             : slot
         )
       );
@@ -221,6 +222,55 @@ const BookingCourt = ({ court }) => {
     }
   };
 
+  //kiểm tra xem ngày đó có trong danh sách khóa hay không
+  const isLockedDate = (date) => {
+    if (!court.lockedDates || court.lockedDates.length === 0) {
+      return false;
+    }
+
+    const result = court.lockedDates.some((locked) => {
+      const lockedDateFormatted = new Date(locked.date).toISOString().split("T")[0];
+      const checkDateFormatted = new Date(date).toISOString().split("T")[0];
+
+      return lockedDateFormatted === checkDateFormatted;
+    });
+
+    return result;
+  };
+
+  const getLockedDate = (dayIndex) => {
+    if (!court?.lockedDates || !Array.isArray(court.lockedDates) || court.lockedDates.length === 0) {
+      return null;
+    }
+    if (dayIndex < 0 || dayIndex >= court.lockedDates.length) {
+      return null;
+    }
+
+    const lockDate = court.lockedDates[dayIndex]?.date;
+    if (!lockDate) {
+      return null;
+    }
+
+    return new Date(lockDate).toISOString().split("T")[0];
+  };
+
+  const getLockReason = (dayIndex) => {
+    if (!court?.lockedDates || !Array.isArray(court.lockedDates) || court.lockedDates.length === 0) {
+      return null;
+    }
+
+    if (dayIndex < 0 || dayIndex >= court.lockedDates.length) {
+      return null;
+    }
+
+    const lockReason = court.lockedDates[dayIndex].reason;
+    if (!lockReason) {
+      return null;
+    }
+
+    return lockReason;
+  }
+
   return (
     <Card
       title={<h2 style={{ color: "#096dd9" }}>{court.name}</h2>}
@@ -252,10 +302,23 @@ const BookingCourt = ({ court }) => {
                 span={3}
                 style={{ textAlign: "center", minWidth: "35px" }}
               >
-                <div>{getDayOfWeek(day.date)}</div>
-                <div style={{ fontSize: "12px", color: "#595959" }}>
-                  {dayMonth}
-                </div>
+                {isLockedDate(day.date) ? (
+                  <>
+                    <span style={{ color: "red" }}>
+                      <div>{getDayOfWeek(day.date)}</div>
+                      <div style={{ fontSize: "12px", color: "#595959" }}>
+                        {dayMonth}
+                      </div>
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <div>{getDayOfWeek(day.date)}</div>
+                    <div style={{ fontSize: "12px", color: "#595959" }}>
+                      {dayMonth}
+                    </div>
+                  </>
+                )}
               </Col>
             );
           })}
@@ -292,37 +355,43 @@ const BookingCourt = ({ court }) => {
               >
                 <Tooltip
                   title={
-                    bookingState[dayIndex][slotIndex] === "booked" ? (
-                      <>
-                        ID:{" "}
-                        {court.bookings[dayIndex].timeSlots[slotIndex]?.userId}{" "}
-                        <br />
-                        Full name:{" "}
-                        {
-                          court.bookings[dayIndex].timeSlots[slotIndex]
-                            ?.full_name
-                        }{" "}
-                        <br />
-                        {user.role === "employee" ? (
-                          <>
-                            Email:{" "}
-                            {
-                              court.bookings[dayIndex].timeSlots[slotIndex]
-                                ?.email
-                            }
-                          </>
-                        ) : null}
-                      </>
-                    ) : (
-                      ""
-                    )
+                    isLockedDate(day.date)
+                      ? `Sân tạm khóa vào ngày ${getLockedDate(dayIndex - 1) || getLockedDate(0) || "Không lấy được dữ liệu"}
+                      vì ${getLockReason(dayIndex - 1) || getLockReason(0)}
+                    `
+                      : bookingState[dayIndex][slotIndex] === "booked" ? (
+                        <>
+                          ID:{" "}
+                          {court.bookings[dayIndex].timeSlots[slotIndex]?.userId}{" "}
+                          <br />
+                          Full name:{" "}
+                          {
+                            court.bookings[dayIndex].timeSlots[slotIndex]
+                              ?.full_name
+                          }{" "}
+                          <br />
+                          {user.role === "employee" ? (
+                            <>
+                              Email:{" "}
+                              {
+                                court.bookings[dayIndex].timeSlots[slotIndex]
+                                  ?.email
+                              }
+                            </>
+                          ) : null}
+                        </>
+                      ) : (
+                        ""
+                      )
                   }
                 >
                   <Button
                     size="small"
                     className={`booking-btn ${bookingState[dayIndex][slotIndex]}`}
                     icon={
-                      bookingState[dayIndex][slotIndex] === "booked" ? (
+                      isLockedDate(day.date) ? (
+                        <LockFilled />
+                      ) : bookingState[dayIndex][slotIndex] === "booked" ? (
                         <CheckOutlined
                           style={{ color: "#52c41a", fontSize: "20px" }}
                         />
@@ -339,9 +408,10 @@ const BookingCourt = ({ court }) => {
                     }
                     onClick={() => handleBooking(dayIndex, slotIndex)}
                     disabled={
-                      bookingState[dayIndex][slotIndex] === "booked" &&
-                      user?._id !==
-                        court.bookings[dayIndex].timeSlots[slotIndex]?.userId
+                      isLockedDate(day.date) ||
+                      (bookingState[dayIndex][slotIndex] === "booked" &&
+                        user?._id !==
+                        court.bookings[dayIndex].timeSlots[slotIndex]?.userId)
                     }
                     style={{
                       width: "100%", // Button chiếm toàn bộ chiều rộng cột

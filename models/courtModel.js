@@ -25,6 +25,12 @@ const courtSchema = new mongoose.Schema({
       ref: "bookings",
     },
   ],
+  lockedDates: [
+    {
+      date: { type: Date, required: true },
+      reason: { type: String, default: "" },
+    },
+  ],
 });
 
 const Court = mongoose.model("courts", courtSchema);
