@@ -16,6 +16,7 @@ const InvoiceDetail = require("../models/invoiceDetailModel");
 const moment = require("moment");
 const dayjs = require("dayjs");
 const mongoose = require("mongoose");
+const courtCategory = require("../models/courtCategoryModel");
 
 const getAllUsersController = async (req, res) => {
   try {
@@ -377,23 +378,23 @@ const getCourtsWithBookingsController = async (req, res) => {
 
               return bookedSlot
                 ? {
-                    timeSlotBooking_id: bookedSlot._id,
-                    userId: bookedSlot.user ? bookedSlot.user._id : null,
-                    full_name: bookedSlot.user
-                      ? bookedSlot.user.full_name
-                      : null,
-                    email: bookedSlot.user ? bookedSlot.user.email : null,
-                    time: bookedSlot.time,
-                    isBooked: true,
-                  }
+                  timeSlotBooking_id: bookedSlot._id,
+                  userId: bookedSlot.user ? bookedSlot.user._id : null,
+                  full_name: bookedSlot.user
+                    ? bookedSlot.user.full_name
+                    : null,
+                  email: bookedSlot.user ? bookedSlot.user.email : null,
+                  time: bookedSlot.time,
+                  isBooked: true,
+                }
                 : {
-                    timeSlotBooking_id: null,
-                    userId: null,
-                    full_name: null,
-                    email: null,
-                    time: slot.time,
-                    isBooked: false,
-                  };
+                  timeSlotBooking_id: null,
+                  userId: null,
+                  full_name: null,
+                  email: null,
+                  time: slot.time,
+                  isBooked: false,
+                };
             })
             .sort((a, b) => a.time.localeCompare(b.time)); // Sắp xếp theo giờ tăng dần
 
@@ -1411,6 +1412,132 @@ const getRevenueController = async (req, res) => {
   }
 };
 
+const getAllCourtCategoryController = async (req, res) => {///////////////////////////////////////////
+  try {
+    const courtCategories = await courtCategory.find();
+    res.status(200).json({ success: true, data: courtCategories });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Lỗi server", error });
+  }
+};
+
+// const getAllProductCategoryController = async (req, res) => {///////////////////////////////////////
+//   try {
+//     const productCategories = await productCategory.find();
+//     res.status(200).json({ success: true, data: productCategories });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: "Lỗi server", error });
+//   }
+// };
+
+const createCourtCategoryController = async (req, res) => {////////////////////////////////////////////
+  try {
+    const { name, price } = req.body;
+    if (!name) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Tên danh mục là bắt buộc!" });
+    }
+
+    const existingCourtCategory = await courtCategory.findOne({ name });
+    if (existingCourtCategory) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Danh mục đã tồn tại!" });
+    }
+
+    const newCourtCategory = new courtCategory({ name, price });
+    await newCourtCategory.save();
+
+    res.status(201).json({
+      success: true,
+      message: "Thêm danh mục thành công!",
+      courtCategory: newCourtCategory,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Lỗi server", error });
+  }
+};
+
+const deleteCourtCategoryController = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Kiểm tra xem danh mục có tồn tại không
+    const category = await courtCategory.findById(id);
+    if (!category) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Danh mục không tồn tại!" });
+    }
+
+    // Kiểm tra xem danh mục có sân nào thuộc về nó không
+    const isCategoryUsed = await Court.exists({ category: id });
+
+    if (isCategoryUsed) {
+      return res.status(400).json({
+        success: false,
+        message: "Không thể xóa danh mục vì đã có sân sử dụng!",
+      });
+    }
+
+    // Nếu không có sân nào thuộc danh mục này, tiến hành xóa
+    await courtCategory.findByIdAndDelete(id);
+
+    res
+      .status(200)
+      .json({ success: true, message: "Xóa danh mục thành công!" });
+  } catch (error) {
+    console.error("Lỗi khi xóa danh mục:", error);
+    res.status(500).json({ success: false, message: "Lỗi server", error });
+  }
+};
+
+const updateCourtCategoryController = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, price } = req.body;
+
+    const updatedCourtCategory = await courtCategory.findByIdAndUpdate(
+      id,
+      { name, price },
+      { new: true }
+    );
+
+    if (!updatedCourtCategory) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Danh mục không tồn tại!" });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Cập nhật danh mục thành công!",
+      courtCategory: updatedCourtCategory,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Lỗi server", error });
+  }
+};
+
+const getCourtCategoryByIdController = async (req, res) => {
+  try {
+    const courtCategoryById = await courtCategory.findById(req.params.id); // Tìm theo ID
+
+    if (!courtCategoryById) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Không tìm thấy danh mục" });
+    }
+
+    res.status(200).json({ success: true, data: courtCategoryById });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Lỗi server", error });
+  }
+};
+
+
 module.exports = {
   getAllUsersController,
   getAllCourtController,
@@ -1449,4 +1576,9 @@ module.exports = {
   getInvoiceDetailController,
   getTimeSlotBooking,
   getRevenueController,
+  getAllCourtCategoryController,
+  createCourtCategoryController,
+  deleteCourtCategoryController,
+  updateCourtCategoryController,
+  getCourtCategoryByIdController,
 };
