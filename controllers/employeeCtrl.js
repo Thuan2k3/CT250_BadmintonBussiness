@@ -380,23 +380,23 @@ const getCourtsWithBookingsController = async (req, res) => {
 
               return bookedSlot
                 ? {
-                    timeSlotBooking_id: bookedSlot._id,
-                    userId: bookedSlot.user ? bookedSlot.user._id : null,
-                    full_name: bookedSlot.user
-                      ? bookedSlot.user.full_name
-                      : null,
-                    email: bookedSlot.user ? bookedSlot.user.email : null,
-                    time: bookedSlot.time,
-                    isBooked: true,
-                  }
+                  timeSlotBooking_id: bookedSlot._id,
+                  userId: bookedSlot.user ? bookedSlot.user._id : null,
+                  full_name: bookedSlot.user
+                    ? bookedSlot.user.full_name
+                    : null,
+                  email: bookedSlot.user ? bookedSlot.user.email : null,
+                  time: bookedSlot.time,
+                  isBooked: true,
+                }
                 : {
-                    timeSlotBooking_id: null,
-                    userId: null,
-                    full_name: null,
-                    email: null,
-                    time: slot.time,
-                    isBooked: false,
-                  };
+                  timeSlotBooking_id: null,
+                  userId: null,
+                  full_name: null,
+                  email: null,
+                  time: slot.time,
+                  isBooked: false,
+                };
             })
             .sort((a, b) => a.time.localeCompare(b.time)); // Sắp xếp theo giờ tăng dần
 
@@ -1423,6 +1423,95 @@ const getRevenueController = async (req, res) => {
   }
 };
 
+const lockCourtController = async (req, res) => {
+  try {
+    const { courtIds, lockedDates, lockReason } = req.body;
+
+    if (!courtIds || !Array.isArray(lockedDates) || lockedDates.length === 0 || !lockReason) {
+      return res.status(400).json({ success: false, message: "Thiếu thông tin!" });
+    }
+
+    console.log("📆 Ngày khóa nhận từ request:", lockedDates);
+
+    const updatedCourts = [];
+    for (let courtId of courtIds) {
+      const court = await Court.findById(courtId);
+      if (!court) continue;
+
+      // Thêm các ngày khóa mới mà không trùng lặp
+      lockedDates.forEach((date) => {
+        if (!court.lockedDates.some((d) => new Date(d.date).getTime() === new Date(date).getTime())) {
+          court.lockedDates.push({ date: new Date(date), reason: lockReason });
+        }
+      });
+
+      await court.save();
+      updatedCourts.push(court);
+    }
+
+    if (!updatedCourts.length) {
+      return res.status(404).json({ success: false, message: "Không tìm thấy sân hợp lệ!" });
+    }
+
+    res.status(200).json({ success: true, message: "Khóa sân thành công!", data: updatedCourts });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Lỗi server!" });
+  }
+};
+
+const unLockAllDates = async (req, res) => {
+  try {
+    const { courtId } = req.body;
+
+    const updatedCourt = await Court.findByIdAndUpdate(
+      courtId,
+      { lockedDates: [] },
+      { new: true } // Trả về bản ghi đã cập nhật
+    );
+
+    if (!updatedCourt) {
+      return res.status(404).json({ success: false, message: "Không tìm thấy sân" });
+    }
+
+    res.json({ success: true, message: "Mở khóa sân thành công!", court: updatedCourt });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Lỗi khi mở khóa sân" });
+  }
+}
+
+const updateLockDates = async (req, res) => {
+  try {
+    const { courtId, updatedLockDates, updatedLockReason } = req.body;
+
+    if (!courtId || !Array.isArray(updatedLockDates) || updatedLockDates.length === 0) {
+      return res.status(400).json({ success: false, message: "Thiếu thông tin!" });
+    }
+
+    console.log("📆 Ngày khóa nhận từ request:", updatedLockDates);
+
+    const court = await Court.findById(courtId);
+    if (!court) {
+      return res.status(404).json({ success: false, message: "Không tìm thấy sân!" });
+    }
+
+    // Thêm các ngày khóa mới mà không trùng lặp
+    court.lockedDates = updatedLockDates.map((date) => ({
+      date: new Date(date),
+      reason: updatedLockReason ? updatedLockReason : court.lockedDates[0]?.reason || "Không có lý do"
+    }));
+
+    await court.save();
+    res.status(200).json({ success: true, message: "Cập nhật khóa sân thành công!", data: court });
+  } catch (error) {
+    cconsole.error(error);
+    res.status(500).json({ success: false, message: "Lỗi server!" });
+  }
+};
+
 module.exports = {
   getAllUsersController,
   getAllCourtController,
@@ -1459,4 +1548,7 @@ module.exports = {
   getInvoiceDetailController,
   getTimeSlotBooking,
   getRevenueController,
+  lockCourtController,
+  unLockAllDates,
+  updateLockDates,
 };
