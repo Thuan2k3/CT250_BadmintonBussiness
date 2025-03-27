@@ -38,6 +38,10 @@ import GuestCourtBookingStatusPage from "./pages/guest/GuestCourtBookingStatusPa
 import EmployeeCourtBookingStatusPage from "./pages/employee/courtBookingStatus/EmployeeCourtBookingStatusPage";
 import ReputationPage from "./pages/admin/reputation/ReputationPage";
 import UpdateReputationPage from "./pages/admin/reputation/UpdateReputationPage";
+import CourtCategoryPage from "./pages/admin/courtCategory/CourtCategoryPage";
+import CreateCourtCategoryPage from "./pages/admin/courtCategory/CreateCourtCategoryPage";
+import DeleteCourtCategoryPage from "./pages/admin/courtCategory/DeleteCourtCategoryPage";
+import UpdateCourtCategoryPage from "./pages/admin/courtCategory/UpdateCourtCategoryPage";
 
 function App() {
   const { loading } = useSelector((state) => state.alerts);
@@ -333,6 +337,38 @@ function App() {
               element={
                 <ProtectedRoute>
                   <RevenueStatisticPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/court-category"
+              element={
+                <ProtectedRoute>
+                  <CourtCategoryPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/court-category/create"
+              element={
+                <ProtectedRoute>
+                  <CreateCourtCategoryPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/court-category/delete/:id"
+              element={
+                <ProtectedRoute>
+                  <DeleteCourtCategoryPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/court-category/update/:id"
+              element={
+                <ProtectedRoute>
+                  <UpdateCourtCategoryPage />
                 </ProtectedRoute>
               }
             />
