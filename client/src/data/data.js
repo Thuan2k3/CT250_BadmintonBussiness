@@ -76,6 +76,11 @@ export const adminMenu = [
     icon: "fa-solid fa-house",
   },
   {
+    name: "Quản lý danh mục sân",
+    path: "/admin/court-category",
+    icon: "fa-solid fa-list",
+  },
+  {
     name: "Quản lý khung giờ",
     path: "/admin/time-slot",
     icon: "fa-solid fa-clock",

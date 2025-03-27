@@ -5,6 +5,8 @@ import GuestLayout from "../components/GuestLayout";
 import { Row, Col, Card, Tag, Modal, Button, message, Typography } from "antd";
 import { Pagination } from "antd";
 import { useSelector } from "react-redux";
+import BookingCourt from "../components/BookingCourt";
+import EmployeeBookingCourt from "../components/EmployeeBookingCourt";
 
 const { Text, Title } = Typography;
 
@@ -12,6 +14,8 @@ const HomePage = () => {
   const [courts, setCourts] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [currentCourt, setCurrentCourt] = useState(null);
+  const [isBookingModalVisible, setIsBookingModalVisible] = useState(false);
+  const [currentBookingCourt, setCurrentBookingCourt] = useState(null);
   const [customer, setCustomer] = useState();
   const { user } = useSelector((state) => state.user);
   const [currentPage, setCurrentPage] = useState(1);
@@ -42,14 +46,17 @@ const HomePage = () => {
   // Lấy danh sách sân
   const getAllCourt = async () => {
     try {
-      const res = await axios.get("http://localhost:8080/api/v1/user/court", {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
-      if (res.data.success) {
-        setCourts(res.data.data);
-      }
+      const response = await axios.get(
+        "http://localhost:8080/api/v1/user/bookings/court",
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      ); // Cập nhật URL API của bạn
+      setCourts(response.data);
     } catch (error) {
-      console.error("Lỗi khi lấy dữ liệu sân: ", error);
+      message.error("Không thể tải dữ liệu sân.");
     }
   };
 
@@ -63,6 +70,18 @@ const HomePage = () => {
   const handleCancel = () => {
     setIsModalVisible(false);
     setCurrentCourt(null);
+  };
+
+  // Hiện modal dat san
+  const showBookingModal = (court) => {
+    setCurrentBookingCourt(court);
+    setIsBookingModalVisible(true);
+  };
+
+  // Đóng modal
+  const handleBookingCancel = () => {
+    setIsBookingModalVisible(false);
+    setCurrentBookingCourt(null);
   };
 
   useEffect(() => {
@@ -214,6 +233,34 @@ const HomePage = () => {
                 >
                   🔍 Xem Chi Tiết
                 </Button>
+                {/* Nút "Đặt sân" */}
+                {(user.role === "customer" || user.role === "employee") && (
+                  <Button
+                    type="primary"
+                    shape="round"
+                    block
+                    style={{
+                      marginTop: "12px",
+                      background: "linear-gradient(135deg, #1890ff, #40a9ff)", // ✅ Xanh gradient nổi bật
+                      border: "none",
+                      fontWeight: "bold",
+                      color: "#fff",
+                      letterSpacing: "0.5px",
+                      textTransform: "uppercase", // ✅ Chữ in hoa cho chuyên nghiệp
+                      boxShadow: "0 4px 12px rgba(24, 144, 255, 0.5)", // ✅ Bóng màu xanh
+                      transition: "all 0.3s ease-in-out",
+                    }}
+                    onClick={() => showBookingModal(court)}
+                    onMouseEnter={(e) =>
+                      (e.target.style.transform = "scale(1.1)")
+                    }
+                    onMouseLeave={(e) =>
+                      (e.target.style.transform = "scale(1)")
+                    }
+                  >
+                    {user.role === "customer" ? "Đặt sân" : "Xem tình trạng đặt sân"}
+                  </Button>
+                )}
               </Card>
             </Col>
           ))}
@@ -259,6 +306,29 @@ const HomePage = () => {
               <strong>📋 Mô tả:</strong>{" "}
               {currentCourt.description || "Không có mô tả."}
             </p>
+          </Modal>
+        )}
+        {/* Modal Đặt sân */}
+        {currentBookingCourt && (
+          <Modal
+            visible={isBookingModalVisible}
+            onCancel={handleBookingCancel}
+            footer={[
+              <Button key="back" onClick={handleBookingCancel}>
+                Đóng
+              </Button>,
+            ]}
+            bodyStyle={{
+              borderRadius: "16px",
+              padding: "24px",
+              background: "#fafafa",
+            }}
+          >
+            {user.role === "customer" ? (
+              <BookingCourt court={currentBookingCourt} />
+            ) : (
+              <EmployeeBookingCourt court={currentBookingCourt} />
+            )}
           </Modal>
         )}
         {/* Phân trang */}

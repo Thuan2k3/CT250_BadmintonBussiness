@@ -41,7 +41,7 @@ const Login = () => {
         <Form
           layout="vertical"
           onFinish={onFinishHandler}
-          className="register-form"
+          className="login-form"
           style={{
             padding: "40px",
             background: "linear-gradient(135deg, #fdfbfb, #ebedee)",
@@ -54,11 +54,11 @@ const Login = () => {
           <Form.Item label="Email" name="email">
             <Input type="email" required />
           </Form.Item>
-          <Form.Item label="Password" name="password">
+          <Form.Item label="Mật khẩu" name="password">
             <Input type="password" required />
           </Form.Item>
           <button className="btn btn-primary" type="submit">
-            Login
+            Đăng nhập
           </button>
         </Form>
       </div>
