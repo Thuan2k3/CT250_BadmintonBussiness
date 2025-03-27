@@ -356,7 +356,7 @@ const BookingCourt = ({ court }) => {
                 <Tooltip
                   title={
                     isLockedDate(day.date)
-                      ? `Sân tạm khóa vào ngày ${getLockedDate(dayIndex - 1) || getLockedDate(0) || "Không lấy được dữ liệu"}
+                      ? `Sân tạm khóa vào ${getLockedDate(dayIndex - 1) || getLockedDate(0) || "Không lấy được dữ liệu"}
                       vì ${getLockReason(dayIndex - 1) || getLockReason(0)}
                     `
                       : bookingState[dayIndex][slotIndex] === "booked" ? (

@@ -36,6 +36,9 @@ const {
   getRevenueController,
   getTimeSlotBooking,
   getAllCustomerController,
+  lockCourtController,
+  unLockAllDates,
+  updateLockDates,
 } = require("../controllers/employeeCtrl");
 
 const router = express.Router();
@@ -164,5 +167,11 @@ router.get("/court/:courtId/:date/:time", authMiddleware, getTimeSlotBooking);
 
 // API: Thống kê tổng doanh thu theo ngày, tháng, năm
 router.get("/revenue", authMiddleware, getRevenueController);
+
+router.post("/court/lock", authMiddleware, lockCourtController);
+
+router.post("/court/unlock", authMiddleware, unLockAllDates);
+
+router.post("/court/update-lock", authMiddleware, updateLockDates);
 
 module.exports = router;
