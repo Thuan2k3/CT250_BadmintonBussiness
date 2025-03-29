@@ -55,8 +55,14 @@ const UnLockCourt = (props) => {
             return;
         }
 
+        const today = dayjs().startOf("day");
         const start = dayjs(updatedLockDates[0]).startOf("day");
         const end = dayjs(updatedLockDates[1]).startOf("day");
+
+        if (start.isBefore(today)) {
+            message.error("Không thể chọn ngày trong quá khứ!");
+            return;
+        }
 
         let allDates = [];
         let current = start;

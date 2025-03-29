@@ -42,8 +42,16 @@ const LockCourt = (props) => {
         }
 
         // Chuyển đổi ngày thành dạng dayjs
+        const today = dayjs().startOf("day"); // Ngày hôm nay (00:00)
         const start = dayjs(selectedDates[0]).startOf("day");
         const end = dayjs(selectedDates[1]).startOf("day");
+
+        // Kiểm tra nếu ngày bắt đầu nhỏ hơn hôm nay
+        if (start.isBefore(today)) {
+            message.error("Không thể chọn ngày trong quá khứ!");
+            return;
+        }
+
 
         let allDates = [];
         let current = start;

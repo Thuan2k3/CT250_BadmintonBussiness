@@ -1433,6 +1433,19 @@ const lockCourtController = async (req, res) => {
 
     console.log("📆 Ngày khóa nhận từ request:", lockedDates);
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Đặt giờ về 00:00 để so sánh đúng ngày
+
+    // Kiểm tra xem có ngày nào nhỏ hơn hôm nay không
+    const invalidDates = lockedDates.filter(date => new Date(date) < today);
+    if (invalidDates.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Không thể chọn ngày trong quá khứ!",
+        invalidDates
+      });
+    }
+
     const updatedCourts = [];
     for (let courtId of courtIds) {
       const court = await Court.findById(courtId);
@@ -1492,6 +1505,14 @@ const updateLockDates = async (req, res) => {
     }
 
     console.log("📆 Ngày khóa nhận từ request:", updatedLockDates);
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Chỉ lấy ngày, bỏ giờ phút giây
+
+    // Kiểm tra nếu có ngày nào trong quá khứ
+    if (updatedLockDates.some(date => new Date(date) < today)) {
+      return res.status(400).json({ success: false, message: "Không thể chọn ngày trong quá khứ!" });
+    }
 
     const court = await Court.findById(courtId);
     if (!court) {
