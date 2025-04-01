@@ -116,6 +116,10 @@ const getCourtsWithBookingsController = async (req, res) => {
   try {
     const courts = await Court.find()
       .populate("bookings")
+      .populate({
+        path: "category",
+        select: "name price", // Chỉ lấy trường name và price
+      })
       .sort({ name: 1 })
       .collation({ locale: "en", strength: 1 })
       .lean();
@@ -161,23 +165,23 @@ const getCourtsWithBookingsController = async (req, res) => {
 
               return bookedSlot
                 ? {
-                    timeSlotBooking_id: bookedSlot._id,
-                    userId: bookedSlot.user ? bookedSlot.user._id : null,
-                    full_name: bookedSlot.user
-                      ? bookedSlot.user.full_name
-                      : null,
-                    email: bookedSlot.user ? bookedSlot.user.email : null,
-                    time: bookedSlot.time,
-                    isBooked: true,
-                  }
+                  timeSlotBooking_id: bookedSlot._id,
+                  userId: bookedSlot.user ? bookedSlot.user._id : null,
+                  full_name: bookedSlot.user
+                    ? bookedSlot.user.full_name
+                    : null,
+                  email: bookedSlot.user ? bookedSlot.user.email : null,
+                  time: bookedSlot.time,
+                  isBooked: true,
+                }
                 : {
-                    timeSlotBooking_id: null,
-                    userId: null,
-                    full_name: null,
-                    email: null,
-                    time: slot.time,
-                    isBooked: false,
-                  };
+                  timeSlotBooking_id: null,
+                  userId: null,
+                  full_name: null,
+                  email: null,
+                  time: slot.time,
+                  isBooked: false,
+                };
             })
             .sort((a, b) => a.time.localeCompare(b.time)); // Sắp xếp theo giờ tăng dần
 

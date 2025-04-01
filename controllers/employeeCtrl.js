@@ -38,14 +38,15 @@ const getAllUsersController = async (req, res) => {
 };
 
 //Sân
-const createCourtController = async (req, res) => {
+const createCourtController = async (req, res) => {///////////////////////////////////////////////////////////////////////////////
   try {
-    const { name, price, description, image, isEmpty } = req.body;
+    const { name, category, description, image, isEmpty } = req.body;
 
     // Tạo sản phẩm mới
     const newCourt = new Court({
       name,
-      price,
+      category,
+      // price: selectedCategory.price, // Lấy giá từ loại sân
       description,
       image,
       isEmpty: isEmpty !== undefined ? isEmpty : true, // Mặc định là trống
@@ -63,6 +64,10 @@ const createCourtController = async (req, res) => {
 const getAllCourtController = async (req, res) => {
   try {
     const courts = await Court.find()
+      .populate({
+        path: "category",
+        select: "name price", // Chỉ lấy trường name và price
+      })
       .sort({ name: 1 })
       .collation({ locale: "en", strength: 1 }); // Sắp xếp theo tên sân (A → Z)
 

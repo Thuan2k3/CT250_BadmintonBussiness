@@ -15,6 +15,38 @@ const CreateCourtPage = () => {
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null); // Lưu file tạm
+  const [courtCategories, setCourtCategories] = useState([]); // Lưu danh sách loại sân
+  const [selectedCourtCategory, setSelectedCategory] = useState(null); // Lưu loại sân được chọn
+  // Lấy danh sách loại sân từ API
+  const fetchCategories = async () => {
+    try {
+      const res = await axios.get("http://localhost:8080/api/v1/employee/court-categories", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      if (res.data.success) {
+        setCourtCategories(res.data.data);
+      } else {
+        message.error("Không thể lấy danh sách loại sân");
+      }
+    } catch (error) {
+      console.error("Lỗi khi lấy danh sách loại sân:", error);
+      message.error("Lỗi server khi lấy danh sách loại sân");
+    }
+  };
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  // Khi chọn loại sân, cập nhật giá tự động
+  const handleCategoryChange = (value) => {
+    const category = courtCategories.find((c) => c._id === value);
+    setSelectedCategory(category);
+    form.setFieldsValue({ category: value });
+  };
   // Xử lý form submit
   const onFinishHandler = async (values) => {
     if (!selectedFile) {
@@ -101,14 +133,22 @@ const CreateCourtPage = () => {
           </Form.Item>
 
           <Form.Item
-            label="Giá mỗi giờ"
-            name="price"
-            rules={[
-              { required: true, message: "Vui lòng nhập giá sản phẩm" },
-              { pattern: /^[0-9]+$/, message: "Giá sản phẩm phải là số" },
-            ]}
+            label="Loại sân"
+            name="category"
+            rules={[{ required: true, message: "Vui lòng chọn loại sân" }]}
           >
-            <Input />
+            <Select placeholder="Chọn loại sân" onChange={handleCategoryChange}>
+              {courtCategories.map((courtCategory) => (
+                <Option key={courtCategory._id} value={courtCategory._id}>
+                  {courtCategory.name}
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
+
+          {/* Hiển thị giá tự động theo loại sân */}
+          <Form.Item label="Giá mỗi giờ">
+            <Input value={selectedCourtCategory?.price?.toLocaleString("vi-VN") + " ₫"} disabled />
           </Form.Item>
 
           <Form.Item label="Mô tả" name="description">
