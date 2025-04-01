@@ -46,6 +46,11 @@ export const employeeMenu = [
     icon: "fa-solid fa-table",
   },
   {
+    name: "Quản lý danh mục sân",
+    path: "/employee/court-category",
+    icon: "fa-solid fa-list",
+  },
+  {
     name: "Xem tình trạng đặt sân",
     path: "/employee/court-booking-status",
     icon: "fa-solid fa-calendar-days",
@@ -74,11 +79,6 @@ export const adminMenu = [
     name: "Home",
     path: "/",
     icon: "fa-solid fa-house",
-  },
-  {
-    name: "Quản lý danh mục sân",
-    path: "/admin/court-category",
-    icon: "fa-solid fa-list",
   },
   {
     name: "Quản lý khung giờ",

@@ -15,7 +15,7 @@ const DeleteCourtCategoryPage = () => {
         dispatch(showLoading()); // Hiển thị loading trước khi gọi API
         try {
             const res = await axios.delete(
-                `http://localhost:8080/api/v1/admin/court-categories/${id}`,
+                `http://localhost:8080/api/v1/employee/court-categories/${id}`,
                 {
                     headers: {
                         Authorization: "Bearer " + localStorage.getItem("token"),
@@ -25,7 +25,7 @@ const DeleteCourtCategoryPage = () => {
             dispatch(hideLoading()); // Ẩn loading sau khi API trả về
             message.success("Xoá danh mục sân thành công");
             // Delay nhẹ để tránh lỗi UI khi chuyển trang quá nhanh
-            setTimeout(() => navigate("/admin/court-category"), 500);
+            setTimeout(() => navigate("/employee/court-category"), 500);
         } catch (error) {
             dispatch(hideLoading()); // Đảm bảo luôn ẩn loading nếu API lỗi
             console.error("Lỗi khi xoá danh mục sân:", error);
@@ -36,7 +36,7 @@ const DeleteCourtCategoryPage = () => {
         }
     };
     const handleCancel = () => {
-        navigate("/admin/court-category");
+        navigate("/employee/court-category");
     };
     return (
         <Layout>

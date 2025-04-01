@@ -39,6 +39,11 @@ const {
   lockCourtController,
   unLockAllDates,
   updateLockDates,
+  getAllCourtCategoryController,
+  createCourtCategoryController,
+  deleteCourtCategoryController,
+  updateCourtCategoryController,
+  getCourtCategoryByIdController,
 } = require("../controllers/employeeCtrl");
 
 const router = express.Router();
@@ -119,6 +124,37 @@ router.delete(
   "/product-categories/:id",
   authMiddleware,
   deleteProductCategoryController
+);
+
+router.get(/////////////////////////////////////////
+  "/court-categories",
+  authMiddleware,
+  getAllCourtCategoryController
+);
+
+router.post(////////////////////////
+  "/court-categories",
+  authMiddleware,
+  createCourtCategoryController
+);
+
+router.delete(//////////////////////////////////////////////////
+  "/court-categories/:id",
+  authMiddleware,
+  deleteCourtCategoryController
+);
+
+router.put(//////////////////////////////////////
+  "/court-categories/:id",
+  authMiddleware,
+  updateCourtCategoryController
+);
+
+// Lấy một danh mục
+router.get(///////////////////////////////////////////////////
+  "/court-categories/:id",
+  authMiddleware,
+  getCourtCategoryByIdController
 );
 
 // Lấy danh sách san pham

@@ -12,7 +12,7 @@ const CourtCategoryPage = () => {
     const getCourtCategories = async () => {
         try {
             const res = await axios.get(
-                "http://localhost:8080/api/v1/admin/court-categories",
+                "http://localhost:8080/api/v1/employee/court-categories",
                 {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -46,7 +46,7 @@ const CourtCategoryPage = () => {
                 {/* Nút thêm danh mục */}
                 <div className="d-flex justify-content-end mb-4">
                     <Link
-                        to="/admin/court-category/create"
+                        to="/employee/court-category/create"
                         className="fs-1 text-success d-flex align-items-center"
                         style={{ textDecoration: "none" }}
                     >
@@ -75,12 +75,12 @@ const CourtCategoryPage = () => {
                                     <td>
                                         <div className="d-flex justify-content-center gap-3">
                                             <Link
-                                                to={`/admin/court-category/update/${category._id}`}
+                                                to={`/employee/court-category/update/${category._id}`}
                                             >
                                                 <AiOutlineEdit className="fs-4 text-warning" />
                                             </Link>
                                             <Link
-                                                to={`/admin/court-category/delete/${category._id}`}
+                                                to={`/employee/court-category/delete/${category._id}`}
                                             >
                                                 <MdOutlineDelete className="fs-4 text-danger" />
                                             </Link>

@@ -132,7 +132,7 @@ const UpdateCourtCategoryPage = () => {
         try {
             dispatch(showLoading());
             const res = await axios.put(
-                `http://localhost:8080/api/v1/admin/court-categories/${id}`,
+                `http://localhost:8080/api/v1/employee/court-categories/${id}`,
                 { name, price }, // Gửi dữ liệu từ state
                 {
                     headers: {
@@ -143,7 +143,7 @@ const UpdateCourtCategoryPage = () => {
             dispatch(hideLoading());
             if (res.data.success) {
                 message.success("Cập nhật danh mục thành công!");
-                navigate("/admin/court-category");
+                navigate("/employee/court-category");
             } else {
                 message.error(res.data.message);
             }
@@ -157,7 +157,7 @@ const UpdateCourtCategoryPage = () => {
     const getCourtCategoryById = async () => {
         try {
             const res = await axios.get(
-                `http://localhost:8080/api/v1/admin/court-categories/${id}`,
+                `http://localhost:8080/api/v1/employee/court-categories/${id}`,
                 {
                     headers: {
                         Authorization: "Bearer " + localStorage.getItem("token"),

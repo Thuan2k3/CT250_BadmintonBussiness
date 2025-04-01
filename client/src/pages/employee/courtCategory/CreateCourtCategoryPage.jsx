@@ -13,7 +13,7 @@ const CreateCourtCategoryPage = () => {
         try {
             dispatch(showLoading());
             const res = await axios.post(
-                "http://localhost:8080/api/v1/admin/court-categories",
+                "http://localhost:8080/api/v1/employee/court-categories",
                 {
                     name: values.name,
                     price: values.price
@@ -27,7 +27,7 @@ const CreateCourtCategoryPage = () => {
             dispatch(hideLoading());
             if (res.data.success) {
                 message.success("Thêm danh mục sân thành công");
-                navigate("/admin/court-category");
+                navigate("/employee/court-category");
             } else {
                 message.error(res.data.message);
             }

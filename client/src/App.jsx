@@ -38,10 +38,10 @@ import GuestCourtBookingStatusPage from "./pages/guest/GuestCourtBookingStatusPa
 import EmployeeCourtBookingStatusPage from "./pages/employee/courtBookingStatus/EmployeeCourtBookingStatusPage";
 import ReputationPage from "./pages/admin/reputation/ReputationPage";
 import UpdateReputationPage from "./pages/admin/reputation/UpdateReputationPage";
-import CourtCategoryPage from "./pages/admin/courtCategory/CourtCategoryPage";
-import CreateCourtCategoryPage from "./pages/admin/courtCategory/CreateCourtCategoryPage";
-import DeleteCourtCategoryPage from "./pages/admin/courtCategory/DeleteCourtCategoryPage";
-import UpdateCourtCategoryPage from "./pages/admin/courtCategory/UpdateCourtCategoryPage";
+import CourtCategoryPage from "./pages/employee/courtCategory/CourtCategoryPage";
+import CreateCourtCategoryPage from "./pages/employee/courtCategory/CreateCourtCategoryPage";
+import DeleteCourtCategoryPage from "./pages/employee/courtCategory/DeleteCourtCategoryPage";
+import UpdateCourtCategoryPage from "./pages/employee/courtCategory/UpdateCourtCategoryPage";
 
 function App() {
   const { loading } = useSelector((state) => state.alerts);
@@ -341,7 +341,7 @@ function App() {
               }
             />
             <Route
-              path="/admin/court-category"
+              path="/employee/court-category"
               element={
                 <ProtectedRoute>
                   <CourtCategoryPage />
@@ -349,7 +349,7 @@ function App() {
               }
             />
             <Route
-              path="/admin/court-category/create"
+              path="/employee/court-category/create"
               element={
                 <ProtectedRoute>
                   <CreateCourtCategoryPage />
@@ -357,7 +357,7 @@ function App() {
               }
             />
             <Route
-              path="/admin/court-category/delete/:id"
+              path="/employee/court-category/delete/:id"
               element={
                 <ProtectedRoute>
                   <DeleteCourtCategoryPage />
@@ -365,7 +365,7 @@ function App() {
               }
             />
             <Route
-              path="/admin/court-category/update/:id"
+              path="/employee/court-category/update/:id"
               element={
                 <ProtectedRoute>
                   <UpdateCourtCategoryPage />
