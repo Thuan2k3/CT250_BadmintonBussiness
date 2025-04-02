@@ -212,10 +212,10 @@ const InvoicePage = () => {
           return prev.map((item) =>
             item.court._id === selectedCourt._id
               ? {
-                  ...item,
-                  court: updatedCourt,
-                  customer: newOrderItem.customer,
-                }
+                ...item,
+                court: updatedCourt,
+                customer: newOrderItem.customer,
+              }
               : item
           );
         }
@@ -287,12 +287,12 @@ const InvoicePage = () => {
       return Math.max(1, hours); // Tối thiểu 1 giờ
     })();
 
-    const totalCost = duration * selectedCourt.price;
+    const totalCost = duration * selectedCourt.category.price;
 
     const newInvoice = {
       courtName: selectedCourt.name,
       duration,
-      cost: selectedCourt.price,
+      cost: selectedCourt.category.price,
       totalCost,
       checkInTime: new Date(checkInTime).toLocaleString("vi-VN"),
       checkOutTime: new Date(checkOutTime).toLocaleString("vi-VN"),
@@ -306,8 +306,8 @@ const InvoicePage = () => {
         prev.map((court) =>
           court._id === selectedCourt._id
             ? {
-                ...court,
-              }
+              ...court,
+            }
             : court
         )
       );
@@ -330,10 +330,10 @@ const InvoicePage = () => {
         prev.map((item) =>
           item.court?._id === selectedCourt._id
             ? {
-                ...item,
-                isEmpty: true,
-                courtInvoice: newInvoice,
-              }
+              ...item,
+              isEmpty: true,
+              courtInvoice: newInvoice,
+            }
             : item
         )
       );
@@ -512,10 +512,10 @@ const InvoicePage = () => {
               if (item.court?._id === courtId) {
                 return updatedProducts.length
                   ? {
-                      ...item,
-                      products: updatedProducts,
-                      totalAmount: newTotalAmount,
-                    }
+                    ...item,
+                    products: updatedProducts,
+                    totalAmount: newTotalAmount,
+                  }
                   : null;
               }
               return item;
@@ -559,15 +559,15 @@ const InvoicePage = () => {
 
               return updatedProducts.length
                 ? {
-                    ...item,
-                    products: updatedProducts,
-                    totalAmount: newTotalAmount,
-                  }
+                  ...item,
+                  products: updatedProducts,
+                  totalAmount: newTotalAmount,
+                }
                 : {
-                    ...item,
-                    products: [],
-                    totalAmount: 0,
-                  }; // ✅ Giữ nguyên thông tin khách hàng (`customer`)
+                  ...item,
+                  products: [],
+                  totalAmount: 0,
+                }; // ✅ Giữ nguyên thông tin khách hàng (`customer`)
             }
             return item;
           })
@@ -691,8 +691,8 @@ const InvoicePage = () => {
           {type === "rent"
             ? "Thuê sân"
             : type === "product"
-            ? "Mua sản phẩm"
-            : "Thuê sân và mua sản phẩm"}
+              ? "Mua sản phẩm"
+              : "Thuê sân và mua sản phẩm"}
         </span>
       </div>
 
@@ -731,20 +731,20 @@ const InvoicePage = () => {
               )}
             {(type === "product" ||
               (type === "both" && selectedCourt._id !== "guest")) && (
-              <>
-                <ProductSelector
-                  products={products}
-                  setSelectedProduct={setSelectedProduct}
-                  setQuantity={setQuantity}
-                  handleAddProduct={handleAddProduct}
-                />
-                <OrderTable
-                  orderItemsCourt={orderItemsCourt}
-                  selectedCourt={selectedCourt}
-                  handleDeleteProduct={handleDeleteProduct}
-                />
-              </>
-            )}
+                <>
+                  <ProductSelector
+                    products={products}
+                    setSelectedProduct={setSelectedProduct}
+                    setQuantity={setQuantity}
+                    handleAddProduct={handleAddProduct}
+                  />
+                  <OrderTable
+                    orderItemsCourt={orderItemsCourt}
+                    selectedCourt={selectedCourt}
+                    handleDeleteProduct={handleDeleteProduct}
+                  />
+                </>
+              )}
             <Title level={4}>
               Tổng tiền:{" "}
               {getTotalAmountForCourt(selectedCourt._id).toLocaleString()} VND

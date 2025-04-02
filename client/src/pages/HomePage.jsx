@@ -300,7 +300,7 @@ const HomePage = () => {
             />
             <p>
               <strong>💰 Giá thuê mỗi giờ:</strong>{" "}
-              {currentCourt.price.toLocaleString("vi-VN")} VND
+              {currentCourt.category.price.toLocaleString("vi-VN")} VND
             </p>
             <p>
               <strong>📋 Mô tả:</strong>{" "}

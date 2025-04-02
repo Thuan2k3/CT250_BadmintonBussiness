@@ -1336,7 +1336,12 @@ const getInvoiceDetailController = async (req, res) => {
     const invoice = await Invoice.findById(id)
       .populate("customer", "full_name email phone")
       .populate("employee", "full_name email phone")
-      .populate("court", "name price")
+      // .populate("court", "name price")
+      .populate({
+        path: "court",
+        select: "name",
+        populate: { path: "category", select: "price" }, // Lấy giá từ category
+      })
       .populate({
         path: "invoiceDetails",
         populate: { path: "product", select: "name price" },
