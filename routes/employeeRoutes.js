@@ -126,32 +126,32 @@ router.delete(
   deleteProductCategoryController
 );
 
-router.get(/////////////////////////////////////////
+router.get(
   "/court-categories",
   authMiddleware,
   getAllCourtCategoryController
 );
 
-router.post(////////////////////////
+router.post(
   "/court-categories",
   authMiddleware,
   createCourtCategoryController
 );
 
-router.delete(//////////////////////////////////////////////////
+router.delete(
   "/court-categories/:id",
   authMiddleware,
   deleteCourtCategoryController
 );
 
-router.put(//////////////////////////////////////
+router.put(
   "/court-categories/:id",
   authMiddleware,
   updateCourtCategoryController
 );
 
 // Lấy một danh mục
-router.get(///////////////////////////////////////////////////
+router.get(
   "/court-categories/:id",
   authMiddleware,
   getCourtCategoryByIdController

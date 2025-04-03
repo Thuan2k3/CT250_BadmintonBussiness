@@ -38,7 +38,7 @@ const getAllUsersController = async (req, res) => {
 };
 
 //Sân
-const createCourtController = async (req, res) => {///////////////////////////////////////////////////////////////////////////////
+const createCourtController = async (req, res) => {
   try {
     const { name, category, description, image, isEmpty } = req.body;
 
@@ -1544,7 +1544,7 @@ const updateLockDates = async (req, res) => {
   }
 };
 
-const getAllCourtCategoryController = async (req, res) => {///////////////////////////////////////////
+const getAllCourtCategoryController = async (req, res) => {
   try {
     const courtCategories = await courtCategory.find();
     res.status(200).json({ success: true, data: courtCategories });
@@ -1553,16 +1553,7 @@ const getAllCourtCategoryController = async (req, res) => {/////////////////////
   }
 };
 
-// const getAllProductCategoryController = async (req, res) => {///////////////////////////////////////
-//   try {
-//     const productCategories = await productCategory.find();
-//     res.status(200).json({ success: true, data: productCategories });
-//   } catch (error) {
-//     res.status(500).json({ success: false, message: "Lỗi server", error });
-//   }
-// };
-
-const createCourtCategoryController = async (req, res) => {////////////////////////////////////////////
+const createCourtCategoryController = async (req, res) => {
   try {
     const { name, price } = req.body;
     if (!name) {

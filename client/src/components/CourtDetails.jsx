@@ -80,7 +80,7 @@ const CourtDetails = ({
     <Card className="mt-3" title="Thông Tin Sân">
       <Text strong>Sân: {selectedCourt.name}</Text> <br />
       <Text>
-        Giá: {selectedCourt?.price ? selectedCourt.price.toLocaleString() : "0"}{" "}
+        Giá: {selectedCourt?.category.price ? selectedCourt.category.price.toLocaleString() : "0"}{" "}
         VND / giờ
       </Text>
       <br />
