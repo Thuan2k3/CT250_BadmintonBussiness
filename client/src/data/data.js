@@ -86,6 +86,11 @@ export const adminMenu = [
     icon: "fa-solid fa-clock",
   },
   {
+    name: "Xem lịch sử đặt sân",
+    path: "/admin/court-booking-history",
+    icon: "fa-solid fa-history",
+  },
+  {
     name: "Quản lý Tài Khoản",
     path: "/admin/account",
     icon: "fas fa-users",

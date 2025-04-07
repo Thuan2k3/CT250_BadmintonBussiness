@@ -16,6 +16,7 @@ const {
   getAllCustomerController,
   getCustomerController,
   updateReputationController,
+  getCourtBookingHistory,
 } = require("../controllers/adminCtrl");
 
 const router = express.Router();
@@ -63,5 +64,7 @@ router.put("/reputation/:id", authMiddleware, updateReputationController);
 
 // API: Thống kê tổng doanh thu theo ngày, tháng, năm
 router.get("/revenue", authMiddleware, getRevenueController);
+
+router.get("/history", authMiddleware, getCourtBookingHistory);
 
 module.exports = router;

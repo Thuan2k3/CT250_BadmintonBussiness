@@ -29,6 +29,7 @@ import UpdateTimeSlotPage from "./pages/admin/timeSlot/UpdateTimeSlotPage";
 import DeleteTimeSlotPage from "./pages/admin/timeSlot/DeleteTimeSlotPage";
 import InvoicePage from "./pages/employee/invoice/InvoicePage";
 import RevenueStatisticPage from "./pages/admin/revenueStatistic/RevenueStatisticPage";
+import CourtBookingHistoryPage from "./pages/admin/courtBookingHistory/CourtBookingHistoryPage";
 import InvoiceHistoryPage from "./pages/employee/invoice/InvoiceHistoryPage";
 import InvoiceDetailPage from "./pages/employee/invoice/InvoiceDetailPage";
 import ViewProductPage from "./pages/customer/product/ViewProductPage";
@@ -369,6 +370,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <UpdateCourtCategoryPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/court-booking-history"
+              element={
+                <ProtectedRoute>
+                  <CourtBookingHistoryPage />
                 </ProtectedRoute>
               }
             />
