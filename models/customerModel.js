@@ -32,6 +32,10 @@ const customerSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    status: {
+      type: String,
+      default: "",
+    },
     reputation_score: {
       type: Number,
       default: 100,

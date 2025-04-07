@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { AiOutlineEdit, AiOutlineSearch } from "react-icons/ai";
 import { MdOutlineAddBox, MdOutlineDelete } from "react-icons/md";
 import axios from "axios";
-import { Tabs, Input, Pagination } from "antd";
+import { Tabs, Input, Pagination, Button, message } from "antd";
 import Layout from "../../../components/Layout";
 
 const { TabPane } = Tabs;
@@ -13,6 +13,7 @@ const AccountPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [activeTab, setActiveTab] = useState("all");
+  const [pendingAccounts, setPendingAccounts] = useState([]);
   const itemsPerPage = 5; // Số tài khoản mỗi trang
 
   // 📌 Lấy danh sách tài khoản
@@ -24,6 +25,7 @@ const AccountPage = () => {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }
       );
+      console.log(res.data.data);
       if (res.data.success) {
         setAccounts(res.data.data);
       }
@@ -32,8 +34,33 @@ const AccountPage = () => {
     }
   };
 
+  const fetchPendingAccounts = async () => {
+    try {
+      const res = await axios.get(
+        "http://localhost:8080/api/v1/admin/pending-users",
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        }
+      );
+
+      console.log(res.data.data);
+
+      if (res.data.success) {
+        setPendingAccounts(res.data.data);
+      } else {
+        console.error(
+          "Không thể lấy danh sách pending users:",
+          res.data.message
+        );
+      }
+    } catch (error) {
+      console.error("Lỗi khi tải pending users:", error);
+    }
+  };
+
   useEffect(() => {
     fetchAccounts();
+    fetchPendingAccounts();
   }, []);
 
   // 📌 Chuyển đổi không dấu (để tìm kiếm không phân biệt dấu)
@@ -50,10 +77,49 @@ const AccountPage = () => {
         (role === "all" || acc.role === role) &&
         convertToUnsigned(acc.full_name).includes(convertToUnsigned(searchTerm))
     );
+  const filterPendingAccounts = () =>
+    pendingAccounts.filter((acc) =>
+      convertToUnsigned(acc.full_name).includes(convertToUnsigned(searchTerm))
+    );
 
   // 📌 Chuyển trang
   const handlePageChange = (page) => {
     setCurrentPage(page);
+  };
+
+  const handleApprove = async (id) => {
+    try {
+      await axios.put(
+        `http://localhost:8080/api/v1/admin/account/approve/${id}`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        }
+      );
+      message.success("Duyệt tài khoản thành công!");
+      fetchPendingAccounts(); // gọi lại API để reload danh sách
+      fetchAccounts();
+    } catch (error) {
+      console.error(error);
+      message.error("Có lỗi xảy ra khi duyệt tài khoản");
+    }
+  };
+
+  const handleReject = async (id) => {
+    try {
+      await axios.delete(
+        `http://localhost:8080/api/v1/admin/account/reject/${id}`,
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        }
+      );
+      message.success("Từ chối tài khoản thành công!");
+      fetchPendingAccounts(); // gọi lại API để reload danh sách
+      fetchAccounts();
+    } catch (error) {
+      console.error(error);
+      message.error("Có lỗi xảy ra khi từ chối tài khoản");
+    }
   };
 
   // 📌 Hiển thị bảng tài khoản
@@ -64,7 +130,6 @@ const AccountPage = () => {
       startIndex,
       startIndex + itemsPerPage
     );
-
     return (
       <>
         <div className="table-responsive">
@@ -113,6 +178,81 @@ const AccountPage = () => {
                     className="text-center text-danger"
                   >
                     Không tìm thấy tài khoản nào.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* ✅ Phân trang với Ant Design */}
+        {filteredData.length > itemsPerPage && (
+          <div className="d-flex justify-content-center mt-3">
+            <Pagination
+              current={currentPage}
+              pageSize={itemsPerPage}
+              total={filteredData.length}
+              onChange={handlePageChange}
+              showSizeChanger={false} // Không cho phép thay đổi số lượng mỗi trang
+            />
+          </div>
+        )}
+      </>
+    );
+  };
+
+  const renderPendingAccountTable = () => {
+    const filteredData = filterPendingAccounts(); // Lọc danh sách tài khoản pending
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const displayedData = filteredData.slice(
+      startIndex,
+      startIndex + itemsPerPage
+    );
+
+    return (
+      <>
+        <div className="table-responsive">
+          <table className="table table-hover table-bordered">
+            <thead className="table-primary text-center">
+              <tr>
+                <th>STT</th>
+                <th>Họ và tên</th>
+                <th>Email</th>
+                <th>Số điện thoại</th>
+                <th>Địa chỉ</th>
+                <th>Trạng thái</th>
+                <th>Hành động</th>
+              </tr>
+            </thead>
+            <tbody>
+              {displayedData.length > 0 ? (
+                displayedData.map((acc, index) => (
+                  <tr key={acc._id} className="align-middle text-center">
+                    <td>{startIndex + index + 1}</td>
+                    <td className="fw-semibold">{acc.full_name}</td>
+                    <td>{acc.email}</td>
+                    <td>{acc.phone}</td>
+                    <td>{acc.address}</td>
+                    <td>{acc.status ? "Chờ duyệt" : "Hoạt động"}</td>
+                    <td>
+                      <div className="d-flex justify-content-center gap-3">
+                        <Button
+                          type="primary"
+                          onClick={() => handleApprove(acc._id)}
+                        >
+                          Chấp nhận
+                        </Button>
+                        <Button onClick={() => handleReject(acc._id)} danger>
+                          Từ chối
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={7} className="text-center text-danger">
+                    Không tìm thấy tài khoản nào chờ duyệt.
                   </td>
                 </tr>
               )}
@@ -186,13 +326,7 @@ const AccountPage = () => {
           </Link>
         </div>
 
-        <Tabs
-          activeKey={activeTab}
-          onChange={(key) => {
-            setActiveTab(key);
-            setCurrentPage(1); // 🔥 Reset về trang 1 khi đổi tab
-          }}
-        >
+        <Tabs activeKey={activeTab} onChange={(key) => setActiveTab(key)}>
           <TabPane tab="📋 Tất cả" key="all">
             {renderAccountTable("all")}
           </TabPane>
@@ -204,6 +338,9 @@ const AccountPage = () => {
           </TabPane>
           <TabPane tab="👤 Khách hàng" key="customer">
             {renderAccountTable("customer")}
+          </TabPane>
+          <TabPane tab="⏳ Tài khoản chờ duyệt" key="pending">
+            {renderPendingAccountTable()}
           </TabPane>
         </Tabs>
       </div>

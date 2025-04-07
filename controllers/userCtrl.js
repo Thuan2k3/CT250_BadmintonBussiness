@@ -16,6 +16,7 @@ const Customer = require("../models/customerModel");
 const moment = require("moment");
 const dayjs = require("dayjs");
 const Comment = require("../models/commentModel");
+const mongoose = require("mongoose");
 const utc = require("dayjs/plugin/utc");
 const timezone = require("dayjs/plugin/timezone");
 dayjs.extend(utc);
@@ -24,7 +25,9 @@ dayjs.extend(timezone);
 //register callback
 const registerController = async (req, res) => {
   try {
-    const existingUser = await userModel.findOne({ email: req.body.email });
+    const existingUser = await userModel.findOne({
+      email: req.body.email,
+    });
     if (existingUser) {
       return res
         .status(200)
@@ -34,6 +37,8 @@ const registerController = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashPassword = await bcrypt.hash(password, salt);
     req.body.password = hashPassword;
+    req.body.status = "pending";
+    req.body._id = new mongoose.Types.ObjectId();
     const newUser = new userModel(req.body);
     await newUser.save();
     res.status(201).send({ message: "Register Successfully", success: true });
@@ -53,8 +58,17 @@ const loginController = async (req, res) => {
     if (!user) {
       return res
         .status(200)
-        .send({ message: "Email hoặc mật khẩu không đúng", success: false });
+        .send({ message: "user not found", success: false });
     }
+
+    // ✅ Kiểm tra trạng thái tài khoản
+    if (user.status === "pending") {
+      return res.status(200).send({
+        message: "Tài khoản của bạn chưa được duyệt!",
+        success: false,
+      });
+    }
+
     if (user.isBlocked) {
       return res
         .status(200)
@@ -73,7 +87,7 @@ const loginController = async (req, res) => {
     const isMath = await bcrypt.compare(req.body.password, user.password);
     if (!isMath) {
       return res.status(200).send({
-        message: "Email hoặc mật khẩu không đúng!",
+        message: "Email hoặc mật khẩu không chính xác!",
         success: false,
       });
     }

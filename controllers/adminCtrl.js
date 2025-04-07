@@ -16,6 +16,7 @@ const InvoiceDetail = require("../models/invoiceDetailModel");
 const moment = require("moment");
 const dayjs = require("dayjs");
 const mongoose = require("mongoose");
+const userModels = require("../models/userModels");
 
 const getAllUsersController = async (req, res) => {
   try {
@@ -819,12 +820,12 @@ const deleteProductController = async (req, res) => {
 const getAllAccountController = async (req, res) => {
   try {
     // Lấy danh sách tất cả tài khoản từ `users`, ẩn mật khẩu
-    const users = await User.find().select("-password");
+    const users = await User.find({ status: { $ne: "pending" } }).select("-password");
 
     // Chia danh sách theo role
-    const admins = await Admin.find().select("-password");
-    const employees = await Employee.find().select("-password");
-    const customers = await Customer.find().select("-password");
+    const admins = await Admin.find({ status: { $ne: "pending" } }).select("-password");
+    const employees = await Employee.find({ status: { $ne: "pending" } }).select("-password");
+    const customers = await Customer.find({ status: { $ne: "pending" } }).select("-password");
 
     // Kết hợp tất cả vào một danh sách duy nhất
     const allAccounts = [...admins, ...employees, ...customers];
@@ -1450,8 +1451,16 @@ const getCourtBookingHistory = async (req, res) => {
 
     const history = await TimeSlotBooking.find(filter)
       .populate("user", "full_name email")
-      .populate("court", "type")
+      // .populate("court", "type")
       .populate("timeSlot", "time")
+      .populate({
+        path: "court",
+        select: "name category",
+        populate: {
+          path: "category",
+          select: "name price",
+        },
+      })
       .sort({ date: -1 });
 
     console.log(">>> Dữ liệu trả về:", history);
@@ -1462,6 +1471,98 @@ const getCourtBookingHistory = async (req, res) => {
     res.status(500).json({ message: "Lỗi server", error: error.message });
   }
 };
+
+const getPendingUsersController = async (req, res) => {
+  try {
+    const pendingUsers = await userModels.find({ status: "pending" }).select("-password");
+    res.status(200).json({
+      success: true,
+      message: "Lấy danh sách người dùng chờ duyệt thành công",
+      data: pendingUsers,
+    });
+  } catch (error) {
+    console.error("Lỗi khi lấy danh sách người dùng pending:", error);
+    res.status(500).json({
+      success: false,
+      message: "Lỗi server khi lấy người dùng pending",
+      error: error.message,
+    });
+  }
+}
+
+const approveAccountController = async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "Không tìm thấy tài khoản",
+      });
+    }
+
+    user.status = "";
+    await user.save();
+
+    let reference;
+    reference = new Customer({
+      _id: user._id,
+      full_name: user.full_name,
+      email: user.email,
+      password: user.password,
+      phone: user.phone,
+      address: user.address,
+      isBlocked: user.isBlocked,
+      status: user.status,
+    });
+
+    await reference.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Duyệt tài khoản thành công",
+    });
+  } catch (error) {
+    console.error("Lỗi khi duyệt tài khoản:", error);
+    res.status(500).json({
+      success: false,
+      message: "Lỗi server khi duyệt tài khoản",
+      error: error.message,
+    });
+  }
+}
+
+const rejectAccountController = async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "Không tìm thấy tài khoản",
+      });
+    }
+
+    // Xóa tài khoản
+    await Customer.findByIdAndDelete(userId);
+    await User.findByIdAndDelete(userId);
+
+    res.status(200).json({
+      success: true,
+      message: "Từ chối và xóa tài khoản thành công",
+    });
+  } catch (error) {
+    console.error("Lỗi khi từ chối và xóa tài khoản:", error);
+    res.status(500).json({
+      success: false,
+      message: "Lỗi server khi từ chối và xóa tài khoản",
+      error: error.message,
+    });
+  }
+};
+
 
 module.exports = {
   getAllUsersController,
@@ -1502,4 +1603,7 @@ module.exports = {
   getTimeSlotBooking,
   getRevenueController,
   getCourtBookingHistory,
+  getPendingUsersController,
+  approveAccountController,
+  rejectAccountController,
 };

@@ -54,9 +54,20 @@ const Login = () => {
           <Form.Item label="Email" name="email">
             <Input type="email" required />
           </Form.Item>
-          <Form.Item label="Mật khẩu" name="password">
-            <Input type="password" required />
-          </Form.Item>
+          <div className="d-block">
+            <Form.Item label="Mật khẩu" name="password">
+              <Input type="password" required />
+            </Form.Item>
+
+            {/* Đặt ngay sau Form.Item để gần hơn */}
+            <div style={{ marginTop: "-10px", marginBottom: "16px", fontSize: "14px" }}>
+              Chưa có tài khoản?
+              <Link to="/register" className="ms-2">
+                Đăng ký
+              </Link>
+            </div>
+          </div>
+
           <button className="btn btn-primary" type="submit">
             Đăng nhập
           </button>

@@ -17,6 +17,9 @@ const {
   getCustomerController,
   updateReputationController,
   getCourtBookingHistory,
+  getPendingUsersController,
+  approveAccountController,
+  rejectAccountController,
 } = require("../controllers/adminCtrl");
 
 const router = express.Router();
@@ -66,5 +69,14 @@ router.put("/reputation/:id", authMiddleware, updateReputationController);
 router.get("/revenue", authMiddleware, getRevenueController);
 
 router.get("/history", authMiddleware, getCourtBookingHistory);
+
+//Lấy tài khoản đang chờ duyệt
+router.get("/pending-users", authMiddleware, getPendingUsersController);
+
+//Duyệt tài khoản chờ
+router.put("/account/approve/:id", authMiddleware, approveAccountController);
+
+//Từ chối duyệt tài khoản chờ
+router.delete("/account/reject/:id", authMiddleware, rejectAccountController);
 
 module.exports = router;

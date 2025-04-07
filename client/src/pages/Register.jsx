@@ -1,10 +1,12 @@
 import React from "react";
 import "../styles/LoginStyle.css";
-import { Form, Input, message } from "antd";
+import { Form, Input, message, } from "antd";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { showLoading, hideLoading } from "../redux/features/alertSlice";
+
+const { TextArea } = Input;
 
 const Register = () => {
   const navigate = useNavigate();
@@ -39,7 +41,7 @@ const Register = () => {
           className="register-form"
         >
           <h3 className="text-center">Register Form</h3>
-          <Form.Item label="Name" name="name">
+          <Form.Item label="Name" name="full_name">
             <Input type="text" required />
           </Form.Item>
           <Form.Item label="Email" name="email">
@@ -47,6 +49,12 @@ const Register = () => {
           </Form.Item>
           <Form.Item label="Password" name="password">
             <Input type="password" required />
+          </Form.Item>
+          <Form.Item label="Phone" name="phone">
+            <Input type="text" required />
+          </Form.Item>
+          <Form.Item label="Address" name="address">
+            <TextArea allowClear required />
           </Form.Item>
           <Link to="/login" className="m-2">
             Already user login here
