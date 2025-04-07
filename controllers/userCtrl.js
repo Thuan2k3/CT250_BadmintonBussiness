@@ -15,6 +15,11 @@ const InvoiceDetail = require("../models/invoiceDetailModel");
 const Customer = require("../models/customerModel");
 const moment = require("moment");
 const dayjs = require("dayjs");
+const Comment = require("../models/commentModel");
+const utc = require("dayjs/plugin/utc");
+const timezone = require("dayjs/plugin/timezone");
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 //register callback
 const registerController = async (req, res) => {
@@ -48,7 +53,7 @@ const loginController = async (req, res) => {
     if (!user) {
       return res
         .status(200)
-        .send({ message: "user not found", success: false });
+        .send({ message: "Email hoặc mật khẩu không đúng", success: false });
     }
     if (user.isBlocked) {
       return res
@@ -68,11 +73,11 @@ const loginController = async (req, res) => {
     const isMath = await bcrypt.compare(req.body.password, user.password);
     if (!isMath) {
       return res.status(200).send({
-        message: "Email hoặc mật khẩu không chính xác!",
+        message: "Email hoặc mật khẩu không đúng!",
         success: false,
       });
     }
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
       expiresIn: "1d",
     });
     res
@@ -111,6 +116,33 @@ const authController = async (req, res) => {
   }
 };
 
+const getCustomerController = async (req, res) => {
+  try {
+    // Tìm khách hàng theo ID (ẩn mật khẩu)
+    const customer = await Customer.findById(req.params.id).select("-password");
+
+    // Kiểm tra nếu không tìm thấy khách hàng
+    if (!customer) {
+      return res.status(404).json({
+        success: false,
+        message: "Không tìm thấy khách hàng",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: customer,
+    });
+  } catch (error) {
+    console.error("Lỗi khi lấy thông tin khách hàng:", error);
+    res.status(500).json({
+      success: false,
+      message: "Lỗi server",
+      error: error.message,
+    });
+  }
+};
+
 //Lay san voi bookings
 const getCourtsWithBookingsController = async (req, res) => {
   try {
@@ -128,7 +160,10 @@ const getCourtsWithBookingsController = async (req, res) => {
     // Hàm lấy 7 ngày tiếp theo
     const getNext7Days = () => {
       return Array.from({ length: 7 }, (_, i) => {
-        return dayjs().add(i, "day").format("YYYY-MM-DD");
+        return dayjs()
+          .tz("Asia/Ho_Chi_Minh")
+          .add(i, "day")
+          .format("YYYY-MM-DD");
       });
     };
 
@@ -206,9 +241,15 @@ const createBookingWithCourtController = async (req, res) => {
       return res.status(400).json({ error: "Dữ liệu không hợp lệ!" });
     }
 
-    const bookingDate = new Date(date);
-    const today = new Date();
-    today.setHours(7, 0, 0, 0);
+    // Chuyển ngày đặt sân về 00:00:00 UTC+7
+    const bookingDate = dayjs(date)
+      .tz("Asia/Ho_Chi_Minh")
+      .startOf("day")
+      .toDate();
+    bookingDate.setHours(7, 0, 0, 0);
+
+    // Lấy ngày hiện tại theo giờ Việt Nam (00:00:00)
+    const today = dayjs().tz("Asia/Ho_Chi_Minh").startOf("day").toDate();
 
     if (bookingDate <= today) {
       return res
@@ -277,15 +318,20 @@ const cancelBookingWithCourtController = async (req, res) => {
     const { bookingId } = req.params;
     const { timeSlotId } = req.body;
 
-    const today = new Date();
-    today.setHours(7, 0, 0, 0);
-
     const booking = await Booking.findById(bookingId);
     if (!booking) {
       return res.status(404).json({ error: "Không tìm thấy đặt sân." });
     }
 
-    const bookingDate = new Date(booking.date);
+    // Chuyển ngày đặt sân về 00:00:00 UTC+7
+    const bookingDate = dayjs(booking.date)
+      .tz("Asia/Ho_Chi_Minh")
+      .startOf("day")
+      .toDate();
+    bookingDate.setHours(7, 0, 0, 0);
+
+    // Lấy ngày hiện tại theo giờ Việt Nam (00:00:00)
+    const today = dayjs().tz("Asia/Ho_Chi_Minh").startOf("day").toDate();
     if (bookingDate <= today) {
       return res
         .status(400)
@@ -376,13 +422,124 @@ const getAllCourtController = async (req, res) => {
   }
 };
 
+// Controller để lấy bình luận theo court_id
+const getCommentByCourtController = async (req, res) => {
+  const { court_id } = req.params;
+
+  try {
+    // Lấy tất cả bình luận của sân cụ thể
+    const comments = await Comment.find({ court_id })
+      .populate("customer_id", "full_name email") // Populate thông tin khách hàng
+      .populate("court_id", "name"); // Populate thông tin sân
+
+    // Trả về danh sách bình luận
+    res.status(200).json(comments);
+  } catch (error) {
+    res.status(500).json({ message: "Lỗi khi lấy bình luận", error });
+  }
+};
+
+// Controller để thêm bình luận mới
+const createCommentController = async (req, res) => {
+  const { customer_id, court_id, content } = req.body;
+
+  if (!customer_id || !court_id || !content) {
+    return res.status(400).json({ message: "Thiếu thông tin bắt buộc" });
+  }
+
+  try {
+    // Tạo bình luận mới
+    const newComment = new Comment({
+      customer_id,
+      court_id,
+      content,
+    });
+
+    // Lưu bình luận vào database
+    const savedComment = await newComment.save();
+
+    // Trả về bình luận đã lưu
+    res.status(201).json(savedComment);
+  } catch (error) {
+    res.status(500).json({ message: "Lỗi khi thêm bình luận", error });
+  }
+};
+
+// Controller để cập nhật bình luận
+const updateCommentController = async (req, res) => {
+  const { content } = req.body;
+  const { id } = req.params;
+
+  try {
+    // Lấy bình luận theo comment_id
+    const comment = await Comment.findById(id);
+
+    if (!comment) {
+      return res.status(404).json({ message: "Bình luận không tồn tại" });
+    }
+
+    // Kiểm tra quyền sửa bình luận (chỉ cho phép sửa bình luận của chính người dùng)
+    if (comment.customer_id.toString() !== req.body.customer_id) {
+      return res
+        .status(403)
+        .json({ message: "Bạn không có quyền sửa bình luận này" });
+    }
+
+    // Cập nhật nội dung bình luận và thời gian cập nhật
+    comment.content = content;
+    comment.updated_at = Date.now(); // Cập nhật thời gian sửa
+
+    // Lưu bình luận đã cập nhật
+    const updatedComment = await comment.save();
+
+    // Trả về bình luận đã cập nhật
+    res.status(200).json(updatedComment);
+  } catch (error) {
+    res.status(500).json({ message: "Lỗi khi sửa bình luận", error });
+  }
+};
+
+// Controller để xóa bình luận
+const deleteCommentController = async (req, res) => {
+  const { id } = req.params;
+  const { customer_id } = req.headers; // Lấy customer_id từ header
+
+  try {
+    // Lấy bình luận theo comment_id
+    const comment = await Comment.findById(id);
+
+    if (!comment) {
+      return res.status(404).json({ message: "Bình luận không tồn tại" });
+    }
+
+    // Kiểm tra quyền xóa bình luận (chỉ cho phép xóa bình luận của chính người dùng)
+    if (comment.customer_id.toString() !== customer_id) {
+      return res
+        .status(403)
+        .json({ message: "Bạn không có quyền xóa bình luận này" });
+    }
+
+    await Comment.deleteOne({ _id: id });
+
+    // Trả về phản hồi thành công
+    res.status(200).json({ message: "Bình luận đã được xóa thành công" });
+  } catch (error) {
+    res.status(500).json({ message: "Lỗi khi xóa bình luận", error });
+  }
+};
+
 module.exports = {
   loginController,
   registerController,
   authController,
+  getCustomerController,
   getAllCourtController,
   getAllProductController,
   getCourtsWithBookingsController,
   createBookingWithCourtController,
   cancelBookingWithCourtController,
+  getCommentByCourtController,
+  createCommentController,
+  updateCommentController,
+  deleteCommentController,
 };

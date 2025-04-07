@@ -2,11 +2,30 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Layout from "../components/Layout";
 import GuestLayout from "../components/GuestLayout";
-import { Row, Col, Card, Tag, Modal, Button, message, Typography } from "antd";
+import {
+  Row,
+  Col,
+  Card,
+  Tag,
+  Modal,
+  Button,
+  message,
+  Typography,
+  Space,
+  Input,
+} from "antd";
+import {
+  CheckOutlined,
+  CheckSquareOutlined,
+  CloseSquareOutlined,
+  CloseOutlined,
+  SearchOutlined,
+} from "@ant-design/icons";
 import { Pagination } from "antd";
 import { useSelector } from "react-redux";
 import BookingCourt from "../components/BookingCourt";
 import EmployeeBookingCourt from "../components/EmployeeBookingCourt";
+import Comment from "../components/Comment";
 
 const { Text, Title } = Typography;
 
@@ -20,6 +39,7 @@ const HomePage = () => {
   const { user } = useSelector((state) => state.user);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 4; // Cố định số lượng sân hiển thị mỗi trang
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Xác định Layout dựa trên vai trò người dùng
   const CurrentLayout = user?.role === "customer" ? GuestLayout : Layout;
@@ -28,7 +48,7 @@ const HomePage = () => {
   const getCustomerById = async () => {
     try {
       const res = await axios.get(
-        `http://localhost:8080/api/v1/admin/customer/${user._id}`,
+        `http://localhost:8080/api/v1/user/customer/${user._id}`,
         {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }
@@ -91,11 +111,27 @@ const HomePage = () => {
     }
   }, [user]);
 
-  // Tính toán danh sách sân hiển thị theo trang hiện tại
-  const filteredCourts = courts.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  );
+  // Hàm loại bỏ dấu tiếng Việt
+  const removeAccents = (str) => {
+    return str
+      .normalize("NFD") // Tách dấu ra khỏi ký tự
+      .replace(/[\u0300-\u036f]/g, "") // Xóa các dấu tiếng Việt
+      .toLowerCase(); // Chuyển về chữ thường
+  };
+
+  // Xử lý khi nhập tìm kiếm
+  const handleSearch = (value) => {
+    setSearchTerm(removeAccents(value));
+  };
+
+  // Lọc sân theo từ khóa tìm kiếm
+  const filteredCourts = courts
+    .filter((court) => removeAccents(court.name).includes(searchTerm))
+    .slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  // Tổng số lượng sân sau khi tìm kiếm
+  const totalFilteredCourts = courts.filter((court) =>
+    removeAccents(court.name).includes(searchTerm)
+  ).length;
 
   return (
     <CurrentLayout>
@@ -148,6 +184,17 @@ const HomePage = () => {
         >
           🏸 Danh Sách Sân Cầu Lông
         </Title>
+
+        {/* Ô tìm kiếm */}
+        <div style={{ marginBottom: "20px", textAlign: "center" }}>
+          <Input
+            placeholder="Tìm kiếm sân theo tên..."
+            prefix={<SearchOutlined />}
+            allowClear
+            onChange={(e) => handleSearch(e.target.value)}
+            style={{ width: "50%", borderRadius: "8px" }}
+          />
+        </div>
 
         {/* Danh sách sân */}
         <Row gutter={[32, 32]} justify="center">
@@ -258,7 +305,9 @@ const HomePage = () => {
                       (e.target.style.transform = "scale(1)")
                     }
                   >
-                    {user.role === "customer" ? "Đặt sân" : "Xem tình trạng đặt sân"}
+                    {user.role === "customer"
+                      ? "Đặt sân"
+                      : "Xem tình trạng đặt sân"}
                   </Button>
                 )}
               </Card>
@@ -306,6 +355,11 @@ const HomePage = () => {
               <strong>📋 Mô tả:</strong>{" "}
               {currentCourt.description || "Không có mô tả."}
             </p>
+
+            {/* Thêm phần bình luận */}
+            <div style={{ marginTop: "24px" }}>
+              <Comment courtId={currentCourt._id} customer={customer} />
+            </div>
           </Modal>
         )}
         {/* Modal Đặt sân */}
@@ -325,19 +379,94 @@ const HomePage = () => {
             }}
           >
             {user.role === "customer" ? (
-              <BookingCourt court={currentBookingCourt} />
+              <>
+                <Space
+                  direction="vertical"
+                  size="small"
+                  style={{ padding: "10px" }}
+                >
+                  <Space
+                    size="middle"
+                    wrap
+                    style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}
+                  >
+                    <h6>Chú thích:</h6>
+                    <Tag>
+                      <CheckOutlined
+                        style={{ fontSize: "20px", color: "#52c41a" }}
+                      />{" "}
+                      Đã đặt (của bạn)
+                    </Tag>
+                    <Tag>
+                      <CheckOutlined
+                        style={{
+                          fontSize: "20px",
+                          color: "rgba(82, 196, 26, 0.3)",
+                        }}
+                      />{" "}
+                      Đã có người đặt
+                    </Tag>
+                    <Tag>
+                      <CheckSquareOutlined
+                        style={{ fontSize: "20px", color: "#faad14" }}
+                      />{" "}
+                      Đang chọn để đặt
+                    </Tag>
+                    <Tag>
+                      <CloseSquareOutlined
+                        style={{ fontSize: "20px", color: "#8c8c8c" }}
+                      />{" "}
+                      Đang chọn để hủy
+                    </Tag>
+                    <Tag>
+                      <CloseOutlined
+                        style={{ color: "#f5222d", fontSize: "20px" }}
+                      />{" "}
+                      Chưa đặt
+                    </Tag>
+                  </Space>
+                </Space>
+                <BookingCourt court={currentBookingCourt} />
+              </>
             ) : (
-              <EmployeeBookingCourt court={currentBookingCourt} />
+              <>
+                <Space
+                  direction="vertical"
+                  size="small"
+                  style={{ padding: "10px" }}
+                >
+                  <Space
+                    size="middle"
+                    wrap
+                    style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}
+                  >
+                    <h6>Chú thích:</h6>
+                    <Tag>
+                      <CheckOutlined
+                        style={{ fontSize: "20px", color: "#52c41a" }}
+                      />{" "}
+                      Đã đặt
+                    </Tag>
+                    <Tag>
+                      <CloseOutlined
+                        style={{ color: "#f5222d", fontSize: "20px" }}
+                      />{" "}
+                      Chưa đặt
+                    </Tag>
+                  </Space>
+                </Space>
+                <EmployeeBookingCourt court={currentBookingCourt} />
+              </>
             )}
           </Modal>
         )}
         {/* Phân trang */}
-        {courts.length > pageSize && (
+        {totalFilteredCourts > pageSize && (
           <div className="d-flex justify-content-center mt-4">
             <Pagination
               current={currentPage}
               pageSize={pageSize}
-              total={courts.length}
+              total={totalFilteredCourts}
               onChange={(page) => setCurrentPage(page)}
             />
           </div>

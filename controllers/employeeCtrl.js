@@ -17,7 +17,6 @@ const moment = require("moment");
 const mongoose = require("mongoose");
 const updateNoShowAndReputation = require("../utils/updateNoShow");
 const dayjs = require("dayjs");
-const courtCategory = require("../models/courtCategoryModel");
 
 const getAllUsersController = async (req, res) => {
   try {
@@ -348,7 +347,10 @@ const getCourtsWithBookingsController = async (req, res) => {
     // Hàm lấy 7 ngày tiếp theo
     const getNext7Days = () => {
       return Array.from({ length: 7 }, (_, i) => {
-        return dayjs().add(i, "day").format("YYYY-MM-DD");
+        return dayjs()
+          .tz("Asia/Ho_Chi_Minh")
+          .add(i, "day")
+          .format("YYYY-MM-DD");
       });
     };
 
@@ -381,23 +383,23 @@ const getCourtsWithBookingsController = async (req, res) => {
 
               return bookedSlot
                 ? {
-                  timeSlotBooking_id: bookedSlot._id,
-                  userId: bookedSlot.user ? bookedSlot.user._id : null,
-                  full_name: bookedSlot.user
-                    ? bookedSlot.user.full_name
-                    : null,
-                  email: bookedSlot.user ? bookedSlot.user.email : null,
-                  time: bookedSlot.time,
-                  isBooked: true,
-                }
+                    timeSlotBooking_id: bookedSlot._id,
+                    userId: bookedSlot.user ? bookedSlot.user._id : null,
+                    full_name: bookedSlot.user
+                      ? bookedSlot.user.full_name
+                      : null,
+                    email: bookedSlot.user ? bookedSlot.user.email : null,
+                    time: bookedSlot.time,
+                    isBooked: true,
+                  }
                 : {
-                  timeSlotBooking_id: null,
-                  userId: null,
-                  full_name: null,
-                  email: null,
-                  time: slot.time,
-                  isBooked: false,
-                };
+                    timeSlotBooking_id: null,
+                    userId: null,
+                    full_name: null,
+                    email: null,
+                    time: slot.time,
+                    isBooked: false,
+                  };
             })
             .sort((a, b) => a.time.localeCompare(b.time)); // Sắp xếp theo giờ tăng dần
 
@@ -1424,241 +1426,6 @@ const getRevenueController = async (req, res) => {
   }
 };
 
-const lockCourtController = async (req, res) => {
-  try {
-    const { courtIds, lockedDates, lockReason } = req.body;
-
-    if (!courtIds || !Array.isArray(lockedDates) || lockedDates.length === 0 || !lockReason) {
-      return res.status(400).json({ success: false, message: "Thiếu thông tin!" });
-    }
-
-    console.log("📆 Ngày khóa nhận từ request:", lockedDates);
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Đặt giờ về 00:00 để so sánh đúng ngày
-
-    // Kiểm tra xem có ngày nào nhỏ hơn hôm nay không
-    const invalidDates = lockedDates.filter(date => new Date(date) < today);
-    if (invalidDates.length > 0) {
-      return res.status(400).json({
-        success: false,
-        message: "Không thể chọn ngày trong quá khứ!",
-        invalidDates
-      });
-    }
-
-    const updatedCourts = [];
-    for (let courtId of courtIds) {
-      const court = await Court.findById(courtId);
-      if (!court) continue;
-
-      // Thêm các ngày khóa mới mà không trùng lặp
-      lockedDates.forEach((date) => {
-        if (!court.lockedDates.some((d) => new Date(d.date).getTime() === new Date(date).getTime())) {
-          court.lockedDates.push({ date: new Date(date), reason: lockReason });
-        }
-      });
-
-      await court.save();
-      updatedCourts.push(court);
-    }
-
-    if (!updatedCourts.length) {
-      return res.status(404).json({ success: false, message: "Không tìm thấy sân hợp lệ!" });
-    }
-
-    res.status(200).json({ success: true, message: "Khóa sân thành công!", data: updatedCourts });
-
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: "Lỗi server!" });
-  }
-};
-
-const unLockAllDates = async (req, res) => {
-  try {
-    const { courtId } = req.body;
-
-    const updatedCourt = await Court.findByIdAndUpdate(
-      courtId,
-      { lockedDates: [] },
-      { new: true } // Trả về bản ghi đã cập nhật
-    );
-
-    if (!updatedCourt) {
-      return res.status(404).json({ success: false, message: "Không tìm thấy sân" });
-    }
-
-    res.json({ success: true, message: "Mở khóa sân thành công!", court: updatedCourt });
-
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: "Lỗi khi mở khóa sân" });
-  }
-}
-
-const updateLockDates = async (req, res) => {
-  try {
-    const { courtId, updatedLockDates, updatedLockReason } = req.body;
-
-    if (!courtId || !Array.isArray(updatedLockDates) || updatedLockDates.length === 0) {
-      return res.status(400).json({ success: false, message: "Thiếu thông tin!" });
-    }
-
-    console.log("📆 Ngày khóa nhận từ request:", updatedLockDates);
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Chỉ lấy ngày, bỏ giờ phút giây
-
-    // Kiểm tra nếu có ngày nào trong quá khứ
-    if (updatedLockDates.some(date => new Date(date) < today)) {
-      return res.status(400).json({ success: false, message: "Không thể chọn ngày trong quá khứ!" });
-    }
-
-    const court = await Court.findById(courtId);
-    if (!court) {
-      return res.status(404).json({ success: false, message: "Không tìm thấy sân!" });
-    }
-
-    // Thêm các ngày khóa mới mà không trùng lặp
-    court.lockedDates = updatedLockDates.map((date) => ({
-      date: new Date(date),
-      reason: updatedLockReason ? updatedLockReason : court.lockedDates[0]?.reason || "Không có lý do"
-    }));
-
-    await court.save();
-    res.status(200).json({ success: true, message: "Cập nhật khóa sân thành công!", data: court });
-  } catch (error) {
-    cconsole.error(error);
-    res.status(500).json({ success: false, message: "Lỗi server!" });
-  }
-};
-
-const getAllCourtCategoryController = async (req, res) => {///////////////////////////////////////////
-  try {
-    const courtCategories = await courtCategory.find();
-    res.status(200).json({ success: true, data: courtCategories });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Lỗi server", error });
-  }
-};
-
-// const getAllProductCategoryController = async (req, res) => {///////////////////////////////////////
-//   try {
-//     const productCategories = await productCategory.find();
-//     res.status(200).json({ success: true, data: productCategories });
-//   } catch (error) {
-//     res.status(500).json({ success: false, message: "Lỗi server", error });
-//   }
-// };
-
-const createCourtCategoryController = async (req, res) => {////////////////////////////////////////////
-  try {
-    const { name, price } = req.body;
-    if (!name) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Tên danh mục là bắt buộc!" });
-    }
-
-    const existingCourtCategory = await courtCategory.findOne({ name });
-    if (existingCourtCategory) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Danh mục đã tồn tại!" });
-    }
-
-    const newCourtCategory = new courtCategory({ name, price });
-    await newCourtCategory.save();
-
-    res.status(201).json({
-      success: true,
-      message: "Thêm danh mục thành công!",
-      courtCategory: newCourtCategory,
-    });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Lỗi server", error });
-  }
-};
-
-const deleteCourtCategoryController = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    // Kiểm tra xem danh mục có tồn tại không
-    const category = await courtCategory.findById(id);
-    if (!category) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Danh mục không tồn tại!" });
-    }
-
-    // Kiểm tra xem danh mục có sân nào thuộc về nó không
-    const isCategoryUsed = await Court.exists({ category: id });
-
-    if (isCategoryUsed) {
-      return res.status(400).json({
-        success: false,
-        message: "Không thể xóa danh mục vì đã có sân sử dụng!",
-      });
-    }
-
-    // Nếu không có sân nào thuộc danh mục này, tiến hành xóa
-    await courtCategory.findByIdAndDelete(id);
-
-    res
-      .status(200)
-      .json({ success: true, message: "Xóa danh mục thành công!" });
-  } catch (error) {
-    console.error("Lỗi khi xóa danh mục:", error);
-    res.status(500).json({ success: false, message: "Lỗi server", error });
-  }
-};
-
-const updateCourtCategoryController = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { name, price } = req.body;
-
-    const updatedCourtCategory = await courtCategory.findByIdAndUpdate(
-      id,
-      { name, price },
-      { new: true }
-    );
-
-    if (!updatedCourtCategory) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Danh mục không tồn tại!" });
-    }
-
-    res.status(200).json({
-      success: true,
-      message: "Cập nhật danh mục thành công!",
-      courtCategory: updatedCourtCategory,
-    });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Lỗi server", error });
-  }
-};
-
-const getCourtCategoryByIdController = async (req, res) => {
-  try {
-    const courtCategoryById = await courtCategory.findById(req.params.id); // Tìm theo ID
-
-    if (!courtCategoryById) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Không tìm thấy danh mục" });
-    }
-
-    res.status(200).json({ success: true, data: courtCategoryById });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: "Lỗi server", error });
-  }
-};
-
 module.exports = {
   getAllUsersController,
   getAllCourtController,
@@ -1695,12 +1462,4 @@ module.exports = {
   getInvoiceDetailController,
   getTimeSlotBooking,
   getRevenueController,
-  lockCourtController,
-  unLockAllDates,
-  updateLockDates,
-  getAllCourtCategoryController,
-  createCourtCategoryController,
-  deleteCourtCategoryController,
-  updateCourtCategoryController,
-  getCourtCategoryByIdController,
 };

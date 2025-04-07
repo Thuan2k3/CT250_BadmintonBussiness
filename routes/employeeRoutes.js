@@ -17,33 +17,13 @@ const {
   createCourtController,
   updateCourtController,
   deleteCourtController,
-  getAllAccountController,
   getAccountController,
-  createAccountController,
-  updateAccountController,
-  deleteAccountController,
-  getAllTimeSlotController,
-  getTimeSlotController,
-  createTimeSlotController,
-  updateTimeSlotController,
-  deleteTimeSlotController,
   getCourtsWithBookingsController,
-  createBookingWithCourtController,
-  cancelBookingWithCourtController,
   getAllInvoicesController,
   createInvoiceController,
   getInvoiceDetailController,
-  getRevenueController,
   getTimeSlotBooking,
   getAllCustomerController,
-  lockCourtController,
-  unLockAllDates,
-  updateLockDates,
-  getAllCourtCategoryController,
-  createCourtCategoryController,
-  deleteCourtCategoryController,
-  updateCourtCategoryController,
-  getCourtCategoryByIdController,
 } = require("../controllers/employeeCtrl");
 
 const router = express.Router();
@@ -66,32 +46,8 @@ router.put("/court/:id", authMiddleware, updateCourtController);
 //Xoa san
 router.delete("/court/:id", authMiddleware, deleteCourtController);
 
-// Lấy danh sách khung gio
-router.get("/time-slot", authMiddleware, getAllTimeSlotController);
-
-// Lấy mot khung gio
-router.get("/time-slot/:id", authMiddleware, getTimeSlotController);
-
-//Them khung gio
-router.post("/time-slot", authMiddleware, createTimeSlotController);
-
-//cap nhat khung gio
-router.put("/time-slot/:id", authMiddleware, updateTimeSlotController);
-
-//Xoa khung gio
-router.delete("/time-slot/:id", authMiddleware, deleteTimeSlotController);
-
 //Route lay bookings tu court
 router.get("/bookings/court", authMiddleware, getCourtsWithBookingsController);
-
-// Route tạo booking mới
-router.post("/bookings", authMiddleware, createBookingWithCourtController);
-
-router.delete(
-  "/bookings/:bookingId",
-  authMiddleware,
-  cancelBookingWithCourtController
-);
 
 // Lấy danh sách danh mục
 router.get(
@@ -126,37 +82,6 @@ router.delete(
   deleteProductCategoryController
 );
 
-router.get(/////////////////////////////////////////
-  "/court-categories",
-  authMiddleware,
-  getAllCourtCategoryController
-);
-
-router.post(////////////////////////
-  "/court-categories",
-  authMiddleware,
-  createCourtCategoryController
-);
-
-router.delete(//////////////////////////////////////////////////
-  "/court-categories/:id",
-  authMiddleware,
-  deleteCourtCategoryController
-);
-
-router.put(//////////////////////////////////////
-  "/court-categories/:id",
-  authMiddleware,
-  updateCourtCategoryController
-);
-
-// Lấy một danh mục
-router.get(///////////////////////////////////////////////////
-  "/court-categories/:id",
-  authMiddleware,
-  getCourtCategoryByIdController
-);
-
 // Lấy danh sách san pham
 router.get("/product", authMiddleware, getAllProductController);
 
@@ -172,23 +97,11 @@ router.put("/product/:id", authMiddleware, updateProductController);
 //Xoa san pham
 router.delete("/product/:id", authMiddleware, deleteProductController);
 
-// Lấy danh sách tai khoan
-router.get("/account", authMiddleware, getAllAccountController);
-
 // Lấy danh sách khach hang
 router.get("/customer", authMiddleware, getAllCustomerController);
 
 // Lấy mot tai khoan
 router.get("/account/:id", authMiddleware, getAccountController);
-
-//Them tai khoan
-router.post("/account", authMiddleware, createAccountController);
-
-//cap nhat tai khoan
-router.put("/account/:id", authMiddleware, updateAccountController);
-
-//Xoa tai khoan
-router.delete("/account/:id", authMiddleware, deleteAccountController);
 
 // Lấy danh sách hóa đơn
 router.get("/invoice", authMiddleware, getAllInvoicesController);
@@ -200,14 +113,5 @@ router.post("/invoice", authMiddleware, createInvoiceController);
 router.get("/invoice/:id", authMiddleware, getInvoiceDetailController);
 
 router.get("/court/:courtId/:date/:time", authMiddleware, getTimeSlotBooking);
-
-// API: Thống kê tổng doanh thu theo ngày, tháng, năm
-router.get("/revenue", authMiddleware, getRevenueController);
-
-router.post("/court/lock", authMiddleware, lockCourtController);
-
-router.post("/court/unlock", authMiddleware, unLockAllDates);
-
-router.post("/court/update-lock", authMiddleware, updateLockDates);
 
 module.exports = router;

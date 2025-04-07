@@ -1,9 +1,26 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import GuestLayout from "../../components/GuestLayout";
-import { Row, Col, Card, Tag, Typography, Button, Modal, message } from "antd";
+import {
+  Row,
+  Col,
+  Card,
+  Tag,
+  Typography,
+  Button,
+  Modal,
+  message,
+  Space,
+  Input,
+} from "antd";
+import {
+  CheckOutlined,
+  CloseOutlined,
+  SearchOutlined,
+} from "@ant-design/icons";
 import { Pagination } from "antd";
 import GuestBookingCourt from "../../components/GuestBookingCourt";
+import Comment from "../../components/Comment";
 
 const { Text, Title } = Typography;
 
@@ -15,6 +32,7 @@ const GuestHomePage = () => {
   const [currentBookingCourt, setCurrentBookingCourt] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 4; // Cố định số lượng sân hiển thị mỗi trang
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Lấy danh sách sân từ API
   const getAllCourt = async () => {
@@ -61,11 +79,27 @@ const GuestHomePage = () => {
     setCurrentBookingCourt(null);
   };
 
-  // Tính toán danh sách sân hiển thị theo trang hiện tại
-  const filteredCourts = courts.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  );
+  // Hàm loại bỏ dấu tiếng Việt
+  const removeAccents = (str) => {
+    return str
+      .normalize("NFD") // Tách dấu ra khỏi ký tự
+      .replace(/[\u0300-\u036f]/g, "") // Xóa các dấu tiếng Việt
+      .toLowerCase(); // Chuyển về chữ thường
+  };
+
+  // Xử lý khi nhập tìm kiếm
+  const handleSearch = (value) => {
+    setSearchTerm(removeAccents(value));
+  };
+
+  // Lọc sân theo từ khóa tìm kiếm
+  const filteredCourts = courts
+    .filter((court) => removeAccents(court.name).includes(searchTerm))
+    .slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  // Tổng số lượng sân sau khi tìm kiếm
+  const totalFilteredCourts = courts.filter((court) =>
+    removeAccents(court.name).includes(searchTerm)
+  ).length;
 
   return (
     <GuestLayout>
@@ -92,6 +126,17 @@ const GuestHomePage = () => {
         >
           🏸 Danh Sách Sân Cầu Lông
         </Title>
+
+        {/* Ô tìm kiếm */}
+        <div style={{ marginBottom: "20px", textAlign: "center" }}>
+          <Input
+            placeholder="Tìm kiếm sân theo tên..."
+            prefix={<SearchOutlined />}
+            allowClear
+            onChange={(e) => handleSearch(e.target.value)}
+            style={{ width: "50%", borderRadius: "8px" }}
+          />
+        </div>
 
         {/* Danh sách sân */}
         <Row gutter={[32, 32]} justify="center">
@@ -246,6 +291,11 @@ const GuestHomePage = () => {
               <strong>📋 Mô tả:</strong>{" "}
               {currentCourt.description || "Không có mô tả."}
             </p>
+
+            {/* Thêm phần bình luận */}
+            <div style={{ marginTop: "24px" }}>
+              <Comment courtId={currentCourt._id} />
+            </div>
           </Modal>
         )}
         {/* Modal Xem tình trạng đặt sân */}
@@ -264,16 +314,43 @@ const GuestHomePage = () => {
               background: "#fafafa",
             }}
           >
-            <GuestBookingCourt court={currentBookingCourt} />
+            <>
+              <Space
+                direction="vertical"
+                size="small"
+                style={{ padding: "10px" }}
+              >
+                <Space
+                  size="middle"
+                  wrap
+                  style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}
+                >
+                  <h6>Chú thích:</h6>
+                  <Tag>
+                    <CheckOutlined
+                      style={{ fontSize: "20px", color: "#52c41a" }}
+                    />{" "}
+                    Đã đặt
+                  </Tag>
+                  <Tag>
+                    <CloseOutlined
+                      style={{ color: "#f5222d", fontSize: "20px" }}
+                    />{" "}
+                    Chưa đặt
+                  </Tag>
+                </Space>
+              </Space>
+              <GuestBookingCourt court={currentBookingCourt} />
+            </>
           </Modal>
         )}
         {/* Phân trang */}
-        {courts.length > pageSize && (
+        {totalFilteredCourts > pageSize && (
           <div className="d-flex justify-content-center mt-4">
             <Pagination
               current={currentPage}
               pageSize={pageSize}
-              total={courts.length}
+              total={totalFilteredCourts}
               onChange={(page) => setCurrentPage(page)}
             />
           </div>

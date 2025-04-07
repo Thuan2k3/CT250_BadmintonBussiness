@@ -19,21 +19,10 @@ const courtSchema = new mongoose.Schema({
     type: Boolean,
     default: true, // Mặc định sân đang trống
   },
-  category: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "courtcategories", // Liên kết đến CourtCategory
-    required: false,
-  },
   bookings: [
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: "bookings",
-    },
-  ],
-  lockedDates: [
-    {
-      date: { type: Date, required: true },
-      reason: { type: String, default: "" },
     },
   ],
 });
