@@ -24,6 +24,9 @@ const {
   getInvoiceDetailController,
   getTimeSlotBooking,
   getAllCustomerController,
+  lockCourtController,
+  unLockAllDates,
+  updateLockDates,
 } = require("../controllers/employeeCtrl");
 
 const router = express.Router();
@@ -113,5 +116,11 @@ router.post("/invoice", authMiddleware, createInvoiceController);
 router.get("/invoice/:id", authMiddleware, getInvoiceDetailController);
 
 router.get("/court/:courtId/:date/:time", authMiddleware, getTimeSlotBooking);
+
+router.post("/court/lock", authMiddleware, lockCourtController);
+
+router.post("/court/unlock", authMiddleware, unLockAllDates);
+
+router.post("/court/update-lock", authMiddleware, updateLockDates);
 
 module.exports = router;
