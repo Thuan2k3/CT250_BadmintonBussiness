@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { AiOutlineEdit, AiOutlineSearch } from "react-icons/ai";
 import { MdOutlineAddBox, MdOutlineDelete } from "react-icons/md";
 import axios from "axios";
-import { Tabs, Input, Pagination, Button, message } from "antd";
+import { Tabs, Input, Pagination, Button, message, Popconfirm, Badge } from "antd";
 import Layout from "../../../components/Layout";
 
 const { TabPane } = Tabs;
@@ -201,6 +201,10 @@ const AccountPage = () => {
     );
   };
 
+  const cancelReject = e => {
+    message.warning('Hủy từ chối duyệt');
+  };
+
   const renderPendingAccountTable = () => {
     const filteredData = filterPendingAccounts(); // Lọc danh sách tài khoản pending
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -242,9 +246,19 @@ const AccountPage = () => {
                         >
                           Chấp nhận
                         </Button>
-                        <Button onClick={() => handleReject(acc._id)} danger>
-                          Từ chối
-                        </Button>
+                        <Popconfirm
+                          title="Từ chối duyệt tài khoản"
+                          description="Tài khoản sẽ bị xóa nếu từ chối!"
+                          placement="left"
+                          onConfirm={() => handleReject(acc._id)}
+                          onCancel={cancelReject}
+                          okText="Có"
+                          cancelText="Không"
+                        >
+                          <Button danger>
+                            Từ chối
+                          </Button>
+                        </Popconfirm>
                       </div>
                     </td>
                   </tr>
@@ -339,7 +353,11 @@ const AccountPage = () => {
           <TabPane tab="👤 Khách hàng" key="customer">
             {renderAccountTable("customer")}
           </TabPane>
-          <TabPane tab="⏳ Tài khoản chờ duyệt" key="pending">
+          <TabPane tab={
+            <Badge count={pendingAccounts.length} size="small" offset={[5, 0]}>
+              <span>⏳ Tài khoản chờ duyệt</span>
+            </Badge>
+          } key="pending">
             {renderPendingAccountTable()}
           </TabPane>
         </Tabs>
