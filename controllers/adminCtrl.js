@@ -1552,9 +1552,15 @@ const rejectAccountController = async (req, res) => {
       });
     }
 
+    // Gửi email thông báo cho khách hàng
+    const subject = "Tài khoản của bạn đã bị từ chối!";
+    const text = `Chào ${user.full_name},\n\nTài khoản của bạn đã bị từ chối duyệt! Bạn có thể liên hệ trực tiếp với quản trị viên để biết thêm chi tiết\n\nCảm ơn bạn đã sử dụng dịch vụ của chúng tôi!`;
+    const email = user.email;
+
     // Xóa tài khoản
     await Customer.findByIdAndDelete(userId);
     await User.findByIdAndDelete(userId);
+    await sendMail(email, subject, text);
 
     res.status(200).json({
       success: true,
