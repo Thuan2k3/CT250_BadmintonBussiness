@@ -95,7 +95,7 @@ const InvoiceDetailPage = () => {
             <strong>Sân Đã Thuê:</strong>{" "}
             {invoice.court?.name || "Mua sản phẩm"}
           </p>
-          {invoice.court?.price &&
+          {invoice.court?.category.price &&
             invoice.checkInTime &&
             invoice.checkOutTime && (
               <>
@@ -261,7 +261,7 @@ const InvoiceDetailPage = () => {
                           return (
                             sum +
                             (detail.quantity || 1) *
-                              (detail.product?.price || 0)
+                            (detail.product?.price || 0)
                           );
                         }, 0)
                         .toLocaleString()}{" "}

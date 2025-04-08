@@ -5,10 +5,10 @@ const courtSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  price: {
-    type: Number,
-    required: true,
-  },
+  // price: {
+  //   type: Number,
+  //   required: true,
+  // },
   description: {
     type: String,
   },
@@ -18,6 +18,11 @@ const courtSchema = new mongoose.Schema({
   isEmpty: {
     type: Boolean,
     default: true, // Mặc định sân đang trống
+  },
+  category: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "courtcategories", // Liên kết đến CourtCategory
+    required: false,
   },
   bookings: [
     {

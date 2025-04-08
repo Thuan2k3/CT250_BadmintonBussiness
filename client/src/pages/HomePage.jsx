@@ -256,7 +256,7 @@ const HomePage = () => {
                   }}
                 >
                   <Text strong>💰 Giá: </Text>{" "}
-                  {court.price.toLocaleString("vi-VN")} VNĐ/giờ
+                  {court.category.price.toLocaleString("vi-VN")} VNĐ/giờ
                 </Tag>
 
                 {/* Nút "Xem chi tiết" */}
@@ -349,7 +349,7 @@ const HomePage = () => {
             />
             <p>
               <strong>💰 Giá thuê mỗi giờ:</strong>{" "}
-              {currentCourt.price.toLocaleString("vi-VN")} VND
+              {currentCourt.category.price.toLocaleString("vi-VN")} VND
             </p>
             <p>
               <strong>📋 Mô tả:</strong>{" "}

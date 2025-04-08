@@ -133,6 +133,7 @@ const CourtPage = (props) => {
               <tr>
                 <th>STT</th>
                 <th>Tên sân</th>
+                <th>Loại sân</th>
                 <th>Giá (VNĐ)</th>
                 <th>Mô tả</th>
                 <th>Hình ảnh</th>
@@ -145,7 +146,9 @@ const CourtPage = (props) => {
                 <tr key={court._id} className="align-middle text-center">
                   <td>{index + 1}</td>
                   <td className="fw-semibold">{court.name}</td>
-                  <td>{court.price.toLocaleString("vi-VN")} ₫</td>
+                  <td>{court.category?.name || "Không có loại"}</td>
+                  {/* <td>{court.price.toLocaleString("vi-VN")} ₫</td> */}
+                  <td>{court.category?.price ? court.category.price.toLocaleString("vi-VN") + " ₫" : "Chưa có giá"}</td>
                   <td className="text-start">{court.description}</td>
                   <td>
                     <img
