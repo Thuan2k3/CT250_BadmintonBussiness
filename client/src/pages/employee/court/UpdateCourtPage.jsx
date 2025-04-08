@@ -15,23 +15,6 @@ const UpdateCourtPage = () => {
   const [courtCategories, setCourtCategories] = useState([]);
   const [selectedCourtCategory, setSelectedCategory] = useState(null);
 
-  // Lấy thông tin sân
-  const getCourt = async () => {
-    try {
-      const res = await axios.get(
-        `http://localhost:8080/api/v1/employee/court/${id}`,
-        {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        }
-      );
-      if (res.data.success) {
-        setCourt(res.data.data);
-      }
-    } catch (error) {
-      console.error("Lỗi khi lấy thông tin sân:", error);
-    }
-  };
-
   // Lấy danh sách loại sân
   const fetchCategories = async () => {
     try {
@@ -47,29 +30,74 @@ const UpdateCourtPage = () => {
     }
   };
 
+  // Lấy thông tin sân
+  const getCourt = async () => {
+    try {
+      const res = await axios.get(`http://localhost:8080/api/v1/employee/court/${id}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
+      if (res.data.success) {
+        setCourt(res.data.data);
+      }
+    } catch (error) {
+      console.error("Lỗi khi lấy thông tin sân:", error);
+    }
+  };
+
+  // Set ảnh đã có sẵn
+  const setImage = async () => {
+    if (!court || !court.image) return;
+
+    const url = court.image.startsWith("/")
+      ? `http://localhost:8080${court.image}`
+      : `http://localhost:8080/${court.image}`;
+
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("Không thể tải ảnh");
+
+      const blob = await response.blob();
+      const nameImage = court.image.replace("/uploads/", "");
+      const file = new File([blob], nameImage, { type: blob.type });
+
+      setSelectedFile(file);
+    } catch (error) {
+      console.error("Lỗi khi tải ảnh:", error);
+    }
+  };
+
+  // Gán dữ liệu vào form khi đã có court và category
+  useEffect(() => {
+    if (court && Object.keys(court).length > 0 && courtCategories.length > 0) {
+      form.setFieldsValue({
+        name: court.name,
+        category: court.category, // Nếu backend trả string _id
+        description: court.description,
+        image: court.image,
+      });
+
+      const foundCategory = courtCategories.find(
+        (c) => c._id === court.category
+      );
+      setSelectedCategory(foundCategory);
+
+      setImage();
+    }
+  }, [court, courtCategories]);
+
   useEffect(() => {
     getCourt();
     fetchCategories();
   }, []);
 
-  useEffect(() => {
-    if (court && Object.keys(court).length > 0) {
-      form.setFieldsValue({
-        name: court.name,
-        category: court.category?._id,
-        description: court.description,
-        image: court.image,
-      });
-      setSelectedCategory(court.category);
-    }
-  }, [court]);
-
+  // Xử lý thay đổi loại sân
   const handleCategoryChange = (value) => {
     const category = courtCategories.find((c) => c._id === value);
     setSelectedCategory(category);
     form.setFieldsValue({ category: value });
   };
 
+  // Xử lý submit form
   const onFinishHandler = async (values) => {
     try {
       let imageUrl = court.image;
@@ -88,14 +116,19 @@ const UpdateCourtPage = () => {
           message.error("Tải ảnh lên thất bại!");
           return;
         }
+
         imageUrl = uploadRes.data.url;
       }
 
       const updatedValues = { ...values, image: imageUrl };
 
-      const res = await axios.put(`http://localhost:8080/api/v1/employee/court/${id}`, updatedValues, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
+      const res = await axios.put(
+        `http://localhost:8080/api/v1/employee/court/${id}`,
+        updatedValues,
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        }
+      );
 
       if (res.data.success) {
         message.success("Cập nhật sân thành công!");
@@ -130,7 +163,10 @@ const UpdateCourtPage = () => {
           </Form.Item>
 
           <Form.Item label="Giá mỗi giờ">
-            <Input value={selectedCourtCategory?.price?.toLocaleString("vi-VN") + " ₫"} disabled />
+            <Input
+              value={selectedCourtCategory?.price?.toLocaleString("vi-VN") + " ₫"}
+              disabled
+            />
           </Form.Item>
 
           <Form.Item label="Mô tả" name="description">
@@ -138,10 +174,18 @@ const UpdateCourtPage = () => {
           </Form.Item>
 
           <Form.Item label="Hình ảnh" name="image" rules={[{ required: true, message: "Vui lòng tải ảnh lên" }]}>
-            <UploadImage onFileSelect={(file) => setSelectedFile(file)} />
+            <UploadImage
+              onFileSelect={(file) => {
+                setSelectedFile(file);
+                form.setFieldsValue({ image: file.name });
+              }}
+              initImage={`http://localhost:8080${court.image}`}
+            />
           </Form.Item>
 
-          <Button type="primary" htmlType="submit">Cập nhật sân</Button>
+          <Button type="primary" htmlType="submit">
+            Cập nhật sân
+          </Button>
         </Form>
       </div>
     </Layout>
