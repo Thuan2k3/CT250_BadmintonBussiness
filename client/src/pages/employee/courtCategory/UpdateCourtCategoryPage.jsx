@@ -81,7 +81,7 @@ const UpdateCourtCategoryPage = () => {
                     <Form.Item
                         label="Tên danh mục"
                         name="name"
-                        rules={[{ required: true, message: "Vui lòng nhập tên loại sản phẩm" }]}
+                        rules={[{ required: true, message: "Vui lòng nhập tên danh mục sân" }]}
                     >
                         <Input value={name} onChange={(e) => setName(e.target.value)} />
                     </Form.Item>

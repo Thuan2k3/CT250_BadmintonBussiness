@@ -46,7 +46,7 @@ const CreateCourtCategoryPage = () => {
                         label="Tên danh mục"
                         name="name"
                         rules={[
-                            { required: true, message: "Vui lòng nhập tên loại sân" },
+                            { required: true, message: "Vui lòng nhập tên danh mục sân" },
                         ]}
                     >
                         <Input />
@@ -55,8 +55,8 @@ const CreateCourtCategoryPage = () => {
                         label="Giá"
                         name="price"
                         rules={[
-                            { required: true, message: "Vui lòng nhập giá sản phẩm" },
-                            { pattern: /^[0-9]+$/, message: "Giá sản phẩm phải là số" },
+                            { required: true, message: "Vui lòng nhập giá danh mục" },
+                            { pattern: /^[0-9]+$/, message: "Giá danh mục sân phải là số" },
                         ]}
                     >
                         <Input />
