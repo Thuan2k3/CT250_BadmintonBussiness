@@ -3,8 +3,18 @@ import { Link } from "react-router-dom";
 import { AiOutlineEdit, AiOutlineSearch } from "react-icons/ai";
 import { MdOutlineAddBox, MdOutlineDelete } from "react-icons/md";
 import axios from "axios";
-import { Tabs, Input, Pagination, Button, message, Popconfirm, Badge } from "antd";
+import {
+  Tabs,
+  Input,
+  Pagination,
+  Button,
+  message,
+  Popconfirm,
+  Badge,
+} from "antd";
 import Layout from "../../../components/Layout";
+import { useDispatch } from "react-redux";
+import { hideLoading, showLoading } from "../../../redux/features/alertSlice";
 
 const { TabPane } = Tabs;
 
@@ -15,6 +25,7 @@ const AccountPage = () => {
   const [activeTab, setActiveTab] = useState("all");
   const [pendingAccounts, setPendingAccounts] = useState([]);
   const itemsPerPage = 5; // Số tài khoản mỗi trang
+  const dispatch = useDispatch();
 
   // 📌 Lấy danh sách tài khoản
   const fetchAccounts = async () => {
@@ -89,6 +100,7 @@ const AccountPage = () => {
 
   const handleApprove = async (id) => {
     try {
+      dispatch(showLoading());
       await axios.put(
         `http://localhost:8080/api/v1/admin/account/approve/${id}`,
         {},
@@ -96,6 +108,7 @@ const AccountPage = () => {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }
       );
+      dispatch(hideLoading());
       message.success("Duyệt tài khoản thành công!");
       fetchPendingAccounts(); // gọi lại API để reload danh sách
       fetchAccounts();
@@ -201,8 +214,8 @@ const AccountPage = () => {
     );
   };
 
-  const cancelReject = e => {
-    message.warning('Hủy từ chối duyệt');
+  const cancelReject = (e) => {
+    message.warning("Hủy từ chối duyệt");
   };
 
   const renderPendingAccountTable = () => {
@@ -255,9 +268,7 @@ const AccountPage = () => {
                           okText="Có"
                           cancelText="Không"
                         >
-                          <Button danger>
-                            Từ chối
-                          </Button>
+                          <Button danger>Từ chối</Button>
                         </Popconfirm>
                       </div>
                     </td>
@@ -353,11 +364,18 @@ const AccountPage = () => {
           <TabPane tab="👤 Khách hàng" key="customer">
             {renderAccountTable("customer")}
           </TabPane>
-          <TabPane tab={
-            <Badge count={pendingAccounts.length} size="small" offset={[5, 0]}>
-              <span>⏳ Tài khoản chờ duyệt</span>
-            </Badge>
-          } key="pending">
+          <TabPane
+            tab={
+              <Badge
+                count={pendingAccounts.length}
+                size="small"
+                offset={[5, 0]}
+              >
+                <span>⏳ Tài khoản chờ duyệt</span>
+              </Badge>
+            }
+            key="pending"
+          >
             {renderPendingAccountTable()}
           </TabPane>
         </Tabs>
