@@ -266,8 +266,6 @@ const createBookingWithCourtController = async (req, res) => {
       .toDate();
     bookingDate.setHours(7, 0, 0, 0);
 
-    clg
-
     // Lấy ngày hiện tại theo giờ Việt Nam (00:00:00)
     const today = new Date();
     today.setUTCHours(7, 0, 0, 0); // 00:00 giờ Việt Nam (UTC+7)
