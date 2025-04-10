@@ -214,23 +214,23 @@ const getCourtsWithBookingsController = async (req, res) => {
 
               return bookedSlot
                 ? {
-                  timeSlotBooking_id: bookedSlot._id,
-                  userId: bookedSlot.user ? bookedSlot.user._id : null,
-                  full_name: bookedSlot.user
-                    ? bookedSlot.user.full_name
-                    : null,
-                  email: bookedSlot.user ? bookedSlot.user.email : null,
-                  time: bookedSlot.time,
-                  isBooked: true,
-                }
+                    timeSlotBooking_id: bookedSlot._id,
+                    userId: bookedSlot.user ? bookedSlot.user._id : null,
+                    full_name: bookedSlot.user
+                      ? bookedSlot.user.full_name
+                      : null,
+                    email: bookedSlot.user ? bookedSlot.user.email : null,
+                    time: bookedSlot.time,
+                    isBooked: true,
+                  }
                 : {
-                  timeSlotBooking_id: null,
-                  userId: null,
-                  full_name: null,
-                  email: null,
-                  time: slot.time,
-                  isBooked: false,
-                };
+                    timeSlotBooking_id: null,
+                    userId: null,
+                    full_name: null,
+                    email: null,
+                    time: slot.time,
+                    isBooked: false,
+                  };
             })
             .sort((a, b) => a.time.localeCompare(b.time)); // Sắp xếp theo giờ tăng dần
 
@@ -266,8 +266,12 @@ const createBookingWithCourtController = async (req, res) => {
       .toDate();
     bookingDate.setHours(7, 0, 0, 0);
 
+    clg
+
     // Lấy ngày hiện tại theo giờ Việt Nam (00:00:00)
-    const today = dayjs().tz("Asia/Ho_Chi_Minh").startOf("day").toDate();
+    const today = new Date();
+    today.setUTCHours(7, 0, 0, 0); // 00:00 giờ Việt Nam (UTC+7)
+    console.log(today);
 
     if (bookingDate <= today) {
       return res
@@ -349,7 +353,9 @@ const cancelBookingWithCourtController = async (req, res) => {
     bookingDate.setHours(7, 0, 0, 0);
 
     // Lấy ngày hiện tại theo giờ Việt Nam (00:00:00)
-    const today = dayjs().tz("Asia/Ho_Chi_Minh").startOf("day").toDate();
+    const today = new Date();
+    today.setUTCHours(7, 0, 0, 0); // 00:00 giờ Việt Nam (UTC+7)
+    console.log(today);
     if (bookingDate <= today) {
       return res
         .status(400)
